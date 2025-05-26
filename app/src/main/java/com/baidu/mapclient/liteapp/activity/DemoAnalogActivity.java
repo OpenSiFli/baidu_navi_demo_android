@@ -131,6 +131,9 @@ public class DemoAnalogActivity extends FragmentActivity implements ISFPreviewVi
         super.onDestroy();
         mRouteGuideManager.onDestroy(false);
         mRouteGuideManager = null;
+        if(videoManager != null){
+            videoManager.stop();
+        }
     }
 
     @Override
@@ -248,7 +251,7 @@ public class DemoAnalogActivity extends FragmentActivity implements ISFPreviewVi
     }
 
     private  void stopPreview(){
-        this.videoManager.endPreviewVideo();
+        this.videoManager.stop();
     }
 
     @Override

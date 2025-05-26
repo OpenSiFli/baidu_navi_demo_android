@@ -439,6 +439,9 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         }
 
         removeNaviListener();
+        if(this.videoManager != null){
+            this.videoManager.stop();
+        }
     }
 
     /**
