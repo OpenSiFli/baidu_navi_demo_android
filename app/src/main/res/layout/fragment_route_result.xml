@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <FrameLayout
+        android:id="@+id/yb_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:layout_marginTop="150dp"
+        android:orientation="vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/bank"
+            android:layout_width="65dp"
+            android:layout_height="35dp"
+            android:background="@drawable/bnav_tab_background"
+            android:text="银行"
+            android:textSize="18dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ld_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="150dp"
+        android:orientation="vertical"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <Button
+            android:id="@+id/city"
+            android:layout_width="65dp"
+            android:layout_height="35dp"
+            android:background="@drawable/bnav_setting_btn_bg_selector"
+            android:text="途经市"
+            android:textSize="18dp" />
+
+        <Button
+            android:id="@+id/route"
+            android:layout_width="65dp"
+            android:layout_height="35dp"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/bnav_setting_btn_bg_selector"
+            android:text="途经路"
+            android:textSize="18dp" />
+
+        <Button
+            android:id="@+id/service"
+            android:layout_width="65dp"
+            android:layout_height="35dp"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/bnav_setting_btn_bg_selector"
+            android:text="服务区"
+            android:textSize="18dp" />
+
+        <Button
+            android:id="@+id/checkpoint"
+            android:layout_width="65dp"
+            android:layout_height="35dp"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/bnav_setting_btn_bg_selector"
+            android:text="检查站"
+            android:textSize="18dp" />
+
+        <Button
+            android:id="@+id/weather"
+            android:layout_width="65dp"
+            android:layout_height="35dp"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/bnav_setting_btn_bg_selector"
+            android:text="天气"
+            android:textSize="18dp" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/fl_retry"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:layout_gravity="bottom"
+        android:layout_centerInParent="true"
+        android:layout_margin="10dp"
+        android:background="@drawable/bnav_tab_background"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <LinearLayout
+            android:id="@+id/ll_retry"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bnav_shape_du"
+                android:gravity="center"
+                android:text="du"
+                android:textColor="#d2d2d2" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="算路失败，重试"
+                android:textColor="#3385ff" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <RelativeLayout
+        android:id="@+id/rl_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_margin="10dp"
+        android:visibility="visible"
+        >
+
+        <Button
+            android:id="@+id/btn_prefer"
+            android:layout_width="80dp"
+            android:layout_height="40dp"
+            android:layout_alignParentBottom="true"
+            android:background="@drawable/bnav_tab_background"
+            android:gravity="center"
+            android:text="偏好选择"
+            android:textSize="18dp" />
+
+        <Button
+            android:id="@+id/btn_fullView"
+            android:layout_width="50dp"
+            android:layout_height="40dp"
+            android:layout_above="@id/btn_prefer"
+            android:layout_marginBottom="5dp"
+            android:background="@drawable/bnav_tab_background"
+            android:gravity="center"
+            android:text="全览"
+            android:textColor="#333333"
+            android:textSize="18dp" />
+
+        <Button
+            android:id="@+id/btn_road"
+            android:layout_width="50dp"
+            android:layout_height="40dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:background="@drawable/bnav_tab_background"
+            android:gravity="center"
+            android:text="路况"
+            android:textColor="#333333"
+            android:textSize="18dp" />
+    </RelativeLayout>
+
+    <com.baidu.mapclient.liteapp.custom.BNScrollLayout
+        android:id="@+id/layout_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="5dp"
+        app:exitOffset="0dp"
+        app:isSupportExit="false">
+
+        <com.baidu.mapclient.liteapp.custom.BNScrollView
+            android:id="@+id/content_scroll"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/layout_3tab"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bnav_tab_background"
+                    android:orientation="vertical"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <include
+                            android:id="@+id/route_0"
+                            layout="@layout/item_route_result_tab"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1" />
+
+                        <include
+                            android:id="@+id/route_1"
+                            layout="@layout/item_route_result_tab"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1" />
+
+                        <include
+                            android:id="@+id/route_2"
+                            layout="@layout/item_route_result_tab"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1px"
+                        android:background="#eaeaea" />
+
+                    <TextView
+                        android:id="@+id/btn_start_navi"
+                        android:layout_width="match_parent"
+                        android:layout_height="38dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bnav_tv_background"
+                        android:gravity="center"
+                        android:text="开始导航"
+                        android:textColor="@color/bnav_text_selector"
+                        android:textSize="16dp" />
+                </LinearLayout>
+
+                <com.baidu.mapclient.liteapp.custom.BNRecyclerView
+                    android:id="@+id/rv"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:background="@android:color/white" />
+            </LinearLayout>
+        </com.baidu.mapclient.liteapp.custom.BNScrollView>
+    </com.baidu.mapclient.liteapp.custom.BNScrollLayout>
+</RelativeLayout>
