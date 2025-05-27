@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -85,12 +86,16 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     private boolean showElement = false;
     private boolean isPause = false;
     private Button bgButton;
+    private Button snapBtn;
 
     private int speed;
    private SFPreviewVideoManager videoManager;
    private Handler mainHandler = new Handler(Looper.getMainLooper());
    private boolean isPreview = false;
    private TextView fpsTv;
+   private LinearLayout topGuideInfoLl;
+   private RelativeLayout bottomGuideInfoRl;
+
 
 
     public MiniMapViewController() {
@@ -124,6 +129,9 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         init(mRootView, context);
         viewHide(false);
         initPreviewNav();
+        mRootView.animate().translationXBy(0).translationYBy(500).setDuration(0);
+        enlarge();
+        enlarge();
         return mRootView;
     }
 
@@ -131,13 +139,16 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         this.videoManager = SFPreviewVideoManager.getInstance();
         this.videoManager.setCallback(this);
         Activity a = (Activity)mContext;
-        this.videoManager.init(a.getApplication(), SFTransmissionMode.TRANSMISSION_MODE_SPP);
+        this.videoManager.init(a.getApplication(), SFTransmissionMode.TRANSMISSION_MODE_BLE);
     }
 
     private void init(ViewGroup rootView, Context context) {
         enlargeViewSize = rootView.findViewById(R.id.enlarge_map_size);
         bgButton = rootView.findViewById(R.id.btn_open_bg);
+        snapBtn = rootView.findViewById(R.id.btn_save_image);
         fpsTv = rootView.findViewById(R.id.bnav_fps_tv);
+        topGuideInfoLl = rootView.findViewById(R.id.guide_info);
+        bottomGuideInfoRl = rootView.findViewById(R.id.relative_bottom_layout);
         rootView.findViewById(R.id.btn_open_bg).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -161,6 +172,12 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
                     bgButton.setText("开始预览");
                 }
 //                saveBitmapToFile(getMapViewBitmap(), System.currentTimeMillis() + ".png");
+            }
+        });
+        snapBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                saveSnap();
             }
         });
 
@@ -228,21 +245,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
 //                        height = Integer.parseInt(sizes[1]);
 //                    }
 //                }
-                ViewGroup.LayoutParams layoutParams = mRootView.getLayoutParams();
-                if (layoutParams.width == miniWidth) {
-                    layoutParams.width = 900;
-                    layoutParams.height = 1300;
-                    offset(0, -250);
-                    ((TextView) rootView.findViewById(R.id.btn_enlarge)).setText("缩小");
-                } else {
-                    layoutParams.width = miniWidth;
-                    layoutParams.height = miniHeight;
-                    ((TextView) rootView.findViewById(R.id.btn_enlarge)).setText("放大");
-                    offset(0, 0);
-                }
-                mRootView.setLayoutParams(layoutParams);
-                mRootView.requestLayout();
-                viewHide(layoutParams.width == 900);
+               enlarge();
             }
         });
 
@@ -368,18 +371,50 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         });
     }
 
+    private void enlarge(){
+        ViewGroup.LayoutParams layoutParams = mRootView.getLayoutParams();
+        if (layoutParams.width == miniWidth) {
+            layoutParams.width = 1024;
+            layoutParams.height = 600;
+            offset(0, -250);
+            ((TextView) mRootView.findViewById(R.id.btn_enlarge)).setText("缩小");
+        } else {
+            layoutParams.width = miniWidth;
+            layoutParams.height = miniHeight;
+            ((TextView) mRootView.findViewById(R.id.btn_enlarge)).setText("放大");
+            offset(0, -250);
+        }
+        mRootView.setLayoutParams(layoutParams);
+        mRootView.requestLayout();
+        viewHide(false);
+
+
+    }
+
     public void viewHide(boolean isEnlarge) {
         int visibility = isEnlarge ? View.VISIBLE : View.GONE;
         mRootView.findViewById(R.id.btn_fullView).setVisibility(visibility);
-        mRootView.findViewById(R.id.btn_touchable).setVisibility(visibility);
+        mRootView.findViewById(R.id.btn_touchable).setVisibility(View.GONE);
         mRootView.findViewById(R.id.navi_mode).setVisibility(visibility);
-        mRootView.findViewById(R.id.relative_top_layout).setVisibility(visibility);
-        mRootView.findViewById(R.id.relative_bottom_layout).setVisibility(visibility);
-        mRootView.findViewById(R.id.guide_info).setVisibility(visibility);
-        mRootView.findViewById(R.id.btn_hide_btn).setVisibility(visibility);
-        mRootView.findViewById(R.id.enlarge_map_size).setVisibility(visibility);
+        mRootView.findViewById(R.id.relative_top_layout).setVisibility(View.VISIBLE);
+        mRootView.findViewById(R.id.relative_bottom_layout).setVisibility(View.VISIBLE);
+        mRootView.findViewById(R.id.guide_info).setVisibility(View.VISIBLE);
+        mRootView.findViewById(R.id.btn_hide_btn).setVisibility(View.GONE);
+        mRootView.findViewById(R.id.enlarge_map_size).setVisibility(View.GONE);
         mRootView.findViewById(R.id.btn_hide).setVisibility(visibility);
     }
+
+    public void showOrHide(){
+            int visibility = mRootView.getVisibility();
+            if(visibility == View.VISIBLE){
+             visibility = View.INVISIBLE;
+            }else{
+                visibility = View.VISIBLE;
+            }
+            mRootView.setVisibility(visibility);
+    }
+
+
 
     @Override
     public void onResume() {
@@ -604,7 +639,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
                             @Override
                             public void run() {
                                 if (action != Action.HIDE) {
-                                    showEnlargeMap(enlargeMap, stringBuilder);
+//                                    showEnlargeMap(enlargeMap, stringBuilder);
                                 } else {
                                     Toast.makeText(mContext, "隐藏放大图", Toast.LENGTH_SHORT).show();
                                     ((RelativeLayout) mRootView.findViewById(
@@ -871,10 +906,40 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         }
     }
 
+    private void saveSnap(){
+        Bitmap map = this.getMapViewBitmap();
+        Bitmap navInfo = makeViewBitmap(this.topGuideInfoLl);
+        Bitmap bottomInfo = makeViewBitmap(this.bottomGuideInfoRl);
+        Bitmap bitmap = NavBitmapFactory.mergeBitmap(map,navInfo,bottomInfo);
+        if(bitmap != null)saveBitmapToFile(bitmap, System.currentTimeMillis() + ".png");
+    }
+
+    public static Bitmap makeViewBitmap(View view) {
+        // 创建与View相同尺寸的Bitmap
+        if(view.getWidth() == 0 || view.getHeight()== 0){
+            return null;
+        }
+        Bitmap bitmap = Bitmap.createBitmap(
+                view.getWidth(),
+                view.getHeight(),
+                Bitmap.Config.ARGB_8888
+        );
+
+        // 创建Canvas并绘制View内容
+
+        Canvas canvas = new Canvas(bitmap);
+        view.draw(canvas);
+
+        return bitmap;
+    }
+
     private void  cycleImage(){
         if(!isPreview)return;
-        Bitmap bitmap = this.getMapViewBitmap();
-        this.videoManager.previewVideoSample(bitmap);
+        Bitmap map = this.getMapViewBitmap();
+        Bitmap navInfo = makeViewBitmap(this.topGuideInfoLl);
+        Bitmap bottomInfo = makeViewBitmap(this.bottomGuideInfoRl);
+        Bitmap bitmap = NavBitmapFactory.mergeBitmap(map,navInfo,bottomInfo);
+        if(bitmap != null)this.videoManager.previewVideoSample(bitmap);
         this.mainHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -886,7 +951,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     private void startPreview(){
         int width = 800;
         int height = 480;
-        int rotation = 90;
+        int rotation = 180;
         float quality = 0.5f;
         SFPreviewVideoConfiguration config = new SFPreviewVideoConfiguration();
         config.setWatchScreenWidth(width);
@@ -895,10 +960,12 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         config.setMirroredHorizontally(false);
         config.setRotation(rotation);
         this.cycleImage();
-        this.videoManager.startPreviewVideo(config,"11:22:33:44:88:8E");
+//        this.videoManager.startPreviewVideo(config,"11:22:33:44:88:8E");
+        this.videoManager.startPreviewVideo(config,"BB:00:00:AB:00:19");
     }
 
-    private  void stopPreview(){
+    public   void stopPreview(){
+        this.isPreview = false;
         this.videoManager.endPreviewVideo();
     }
 

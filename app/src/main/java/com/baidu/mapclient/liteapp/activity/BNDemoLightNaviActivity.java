@@ -36,6 +36,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -52,6 +53,7 @@ public class BNDemoLightNaviActivity extends FragmentActivity {
      * 多实例底图
      */
     public MiniMapViewController miniMapViewController = new MiniMapViewController();
+    private Button showHideMiniBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +83,7 @@ public class BNDemoLightNaviActivity extends FragmentActivity {
 
     private void initView() {
         mapContainer = findViewById(R.id.map_container);
+        showHideMiniBtn = findViewById(R.id.light_nav_hide_minimap_btn);
         // 将底图装载进mapContainer父容器
         BaiduNaviManagerFactory.getMapManager().attach(mapContainer);
     }
@@ -92,6 +95,12 @@ public class BNDemoLightNaviActivity extends FragmentActivity {
                 BNDemoUtils.setBoolean(BNDemoLightNaviActivity.this,
                         BNDemoUtils.KEY_GB_MINI_MAP_TYPE, true);
                 initMiniMapView();
+            }
+        });
+        showHideMiniBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                miniMapViewController.showOrHide();
             }
         });
     }
@@ -106,6 +115,7 @@ public class BNDemoLightNaviActivity extends FragmentActivity {
             miniMapViewController.onResume();
         } else {
             mapContainer.removeView(miniMap);
+            miniMapViewController.stopPreview();
             miniMapViewController.onPause();
             miniMapViewController.onDestroy();
             miniMap = null;

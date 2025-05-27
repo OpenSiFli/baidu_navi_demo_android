@@ -95,6 +95,11 @@
             android:layout_height="0dp"
             android:layout_weight="1"/>
         <Button
+            android:id="@+id/btn_save_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="快照"/>
+        <Button
             android:id="@+id/btn_open_bg"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
