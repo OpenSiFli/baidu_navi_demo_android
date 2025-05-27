@@ -639,7 +639,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
                             @Override
                             public void run() {
                                 if (action != Action.HIDE) {
-//                                    showEnlargeMap(enlargeMap, stringBuilder);
+                                    showEnlargeMap(enlargeMap, stringBuilder);
                                 } else {
                                     Toast.makeText(mContext, "隐藏放大图", Toast.LENGTH_SHORT).show();
                                     ((RelativeLayout) mRootView.findViewById(

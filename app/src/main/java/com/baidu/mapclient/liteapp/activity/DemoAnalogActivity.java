@@ -20,7 +20,9 @@ import androidx.annotation.RequiresApi;
 import androidx.fragment.app.FragmentActivity;
 
 import com.baidu.mapapi.map.BaiduMap;
+import com.baidu.mapclient.liteapp.BNDemoUtils;
 import com.baidu.mapclient.liteapp.R;
+import com.baidu.mapclient.liteapp.custom.MiniMapViewController;
 import com.baidu.mapclient.liteapp.listener.BNDemoNaviListener;
 import com.baidu.navisdk.adapter.BNaviCommonParams;
 import com.baidu.navisdk.adapter.BaiduNaviManagerFactory;
@@ -51,6 +53,9 @@ public class DemoAnalogActivity extends FragmentActivity implements ISFPreviewVi
     private TextView fpsTv;
     private Handler mainHandler = new Handler(Looper.getMainLooper());
 
+    private FrameLayout mapContainer = null;
+    public MiniMapViewController miniMapViewController = new MiniMapViewController();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,7 +82,7 @@ public class DemoAnalogActivity extends FragmentActivity implements ISFPreviewVi
             ((ViewGroup) view.getParent()).removeAllViews();
         }
         layout.addView(view);
-
+        mapContainer = layout;
         initListener();
         iniPreviewNav();
     }
@@ -92,12 +97,30 @@ public class DemoAnalogActivity extends FragmentActivity implements ISFPreviewVi
     }
 
     private void iniPreviewNav(){
+
         this.previewBtn = findViewById(R.id.analog_start_preview_btn);
         this.fpsTv = findViewById(R.id.analog_fps_tv);
 //        BaiduNaviManagerFactory.getMapManager().getMapView().getMap();
         this.videoManager = SFPreviewVideoManager.getInstance();
         this.videoManager.setCallback(this);
         this.videoManager.init(this.getApplication(), SFTransmissionMode.TRANSMISSION_MODE_SPP);
+    }
+
+    private View miniMap = null;
+    private void initMiniMapView() {
+        if (miniMap == null) {
+            miniMap = miniMapViewController.onCreate(this);
+            if (miniMap != null) {
+                mapContainer.addView(miniMap);
+            }
+            miniMapViewController.onResume();
+        } else {
+            mapContainer.removeView(miniMap);
+            miniMapViewController.stopPreview();
+            miniMapViewController.onPause();
+            miniMapViewController.onDestroy();
+            miniMap = null;
+        }
     }
 
     @Override
@@ -214,6 +237,10 @@ public class DemoAnalogActivity extends FragmentActivity implements ISFPreviewVi
                 stopPreview();
                 previewBtn.setText("开始预览");
             }
+        }else if(R.id.analog_open_mini_btn == view.getId()){
+            BNDemoUtils.setBoolean(DemoAnalogActivity.this,
+                    BNDemoUtils.KEY_GB_MINI_MAP_TYPE, true);
+            initMiniMapView();
         }
     }
 

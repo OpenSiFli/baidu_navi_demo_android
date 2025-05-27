@@ -54,6 +54,14 @@
             android:layout_above="@id/analog_start_preview_btn"
             android:textColor="@color/bnav_service_dyna_bg_yellow"
             android:text="fps"/>
+        <Button
+            android:id="@+id/analog_open_mini_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/analog_start_preview_btn"
+            android:layout_marginBottom="20dp"
+            android:onClick="onClick"
+            android:text="多实例地图" />
 
     </RelativeLayout>
 
