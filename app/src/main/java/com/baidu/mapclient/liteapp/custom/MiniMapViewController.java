@@ -68,8 +68,8 @@ import java.util.TimerTask;
 public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewVideoManagerCallback {
 
     private  final  String TAG = "MiniMapViewController";
-    private final static int miniWidth = 1200;
-    private final static int miniHeight = 720;
+    private final static int miniWidth = 1024;
+    private final static int miniHeight = 600;
     /**
      * 多实例底图
      */
