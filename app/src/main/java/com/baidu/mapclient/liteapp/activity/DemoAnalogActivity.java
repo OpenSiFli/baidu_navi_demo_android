@@ -241,6 +241,8 @@ public class DemoAnalogActivity extends FragmentActivity implements ISFPreviewVi
             BNDemoUtils.setBoolean(DemoAnalogActivity.this,
                     BNDemoUtils.KEY_GB_MINI_MAP_TYPE, true);
             initMiniMapView();
+        }else if (R.id.analog_start_hide_mini_btn == view.getId()){
+            this.miniMapViewController.showOrHide();
         }
     }
 

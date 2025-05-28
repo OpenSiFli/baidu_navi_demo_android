@@ -24,9 +24,10 @@
             android:id="@+id/guide_info"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:padding="2dp"
             android:layout_centerHorizontal="true"
             android:gravity="center"
-            android:background="@drawable/bnav_tab_background_bule"
+            android:background="@drawable/bnav_tab_background_dark"
             >
             <ImageView
                 android:id="@+id/guideinfo_icon"
@@ -65,7 +66,7 @@
     </RelativeLayout>
     <RelativeLayout
         android:id="@+id/relative_bottom_layout"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:gravity="center">

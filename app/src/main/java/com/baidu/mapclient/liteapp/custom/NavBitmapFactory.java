@@ -2,6 +2,7 @@ package com.baidu.mapclient.liteapp.custom;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.util.Log;
 
 /**
  * @author hecq
@@ -10,7 +11,8 @@ import android.graphics.Canvas;
  * description
  */
 public class NavBitmapFactory {
-    public static Bitmap mergeBitmap(Bitmap map, Bitmap navInfo, Bitmap bottomInfo) {
+    private final static String TAG = "NavBitmapFactory";
+    public static Bitmap mergeBitmap(Bitmap map, Bitmap navInfo, Bitmap topRightInfo,Bitmap enlargeMap,Bitmap lineList) {
         if(map == null)return null;
         if(map.getWidth() == 0 || map.getHeight() == 0){
             return  null;
@@ -19,7 +21,7 @@ public class NavBitmapFactory {
         Bitmap result = Bitmap.createBitmap(
                 map.getWidth(),
                 map.getHeight(),
-                Bitmap.Config.ARGB_8888
+                Bitmap.Config.RGB_565
         );
 
         Canvas canvas = new Canvas(result);
@@ -27,18 +29,36 @@ public class NavBitmapFactory {
         // 1. 绘制底图
         canvas.drawBitmap(map, 0, 0, null);
 
-        // 2. 顶部导航信息（水平居中）
+        // 2. 顶部居左
+        int lineListTop = 0;
+        int navInfoTop = 10;
+        int marginLeft = 15;
         if (navInfo != null) {
-            int navX = (map.getWidth() - navInfo.getWidth()) / 2;
-            canvas.drawBitmap(navInfo, navX, 0, null);
+
+            canvas.drawBitmap(navInfo, marginLeft, navInfoTop, null);
+            lineListTop = navInfoTop + navInfo.getHeight() + 5;
         }
 
-        // 3. 底部里程信息（水平居中）
-        if (bottomInfo != null) {
-            int bottomX = (map.getWidth() - bottomInfo.getWidth()) / 2;
-            int bottomY = map.getHeight() - bottomInfo.getHeight();
-            canvas.drawBitmap(bottomInfo, bottomX, bottomY, null);
+        // 3.右上信息
+
+        if (topRightInfo != null) {
+            int topRightX = map.getWidth() - topRightInfo.getWidth() -marginLeft;
+            Log.i(TAG,"topRight x=" + topRightX + ",mapWdith=" + map.getWidth() + ",topRightWidth=" + topRightInfo.getWidth());
+            int topRightY = navInfoTop;
+            canvas.drawBitmap(topRightInfo, topRightX, topRightY, null);
+
         }
+        int enlargeTop = lineListTop;
+        if(lineList != null){
+            canvas.drawBitmap(lineList, marginLeft, lineListTop, null);
+            enlargeTop += lineList.getHeight();
+        }
+
+        if(enlargeMap != null){
+            canvas.drawBitmap(enlargeMap, marginLeft, enlargeTop, null);
+        }
+
+
 
         return result;
     }

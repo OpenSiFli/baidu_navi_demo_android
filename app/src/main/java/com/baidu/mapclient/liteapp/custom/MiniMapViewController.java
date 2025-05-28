@@ -139,7 +139,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         this.videoManager = SFPreviewVideoManager.getInstance();
         this.videoManager.setCallback(this);
         Activity a = (Activity)mContext;
-        this.videoManager.init(a.getApplication(), SFTransmissionMode.TRANSMISSION_MODE_BLE);
+        this.videoManager.init(a.getApplication(), SFTransmissionMode.TRANSMISSION_MODE_SPP);
     }
 
     private void init(ViewGroup rootView, Context context) {
@@ -714,7 +714,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         if (etaView == null) {
             etaView = LayoutInflater.from(mContext).inflate(R.layout.onsdk_remain_info_layout, null, false);
             RelativeLayout.LayoutParams layoutParams =
-                    new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, 210);
+                    new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
             etaView.setElevation(0);
             ((RelativeLayout) mRootView.findViewById(
                     R.id.relative_bottom_layout)).addView(etaView, layoutParams);
@@ -910,7 +910,15 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         Bitmap map = this.getMapViewBitmap();
         Bitmap navInfo = makeViewBitmap(this.topGuideInfoLl);
         Bitmap bottomInfo = makeViewBitmap(this.bottomGuideInfoRl);
-        Bitmap bitmap = NavBitmapFactory.mergeBitmap(map,navInfo,bottomInfo);
+        Bitmap lineListMap = null;
+        if(lanelineList.getVisibility() == View.VISIBLE){
+            lineListMap = makeViewBitmap(this.lanelineList);
+        }
+        Bitmap enlargeMap = null;
+        if(enlargeView != null){
+            enlargeMap = makeViewBitmap(enlargeView);
+        }
+        Bitmap bitmap = NavBitmapFactory.mergeBitmap(map,navInfo,bottomInfo,enlargeMap,lineListMap);
         if(bitmap != null)saveBitmapToFile(bitmap, System.currentTimeMillis() + ".png");
     }
 
@@ -938,7 +946,15 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         Bitmap map = this.getMapViewBitmap();
         Bitmap navInfo = makeViewBitmap(this.topGuideInfoLl);
         Bitmap bottomInfo = makeViewBitmap(this.bottomGuideInfoRl);
-        Bitmap bitmap = NavBitmapFactory.mergeBitmap(map,navInfo,bottomInfo);
+        Bitmap lineListMap = null;
+        if(lanelineList.getVisibility() == View.VISIBLE){
+            lineListMap = makeViewBitmap(this.lanelineList);
+        }
+        Bitmap enlargeMap = null;
+        if(enlargeView != null){
+            enlargeMap = makeViewBitmap(enlargeView);
+        }
+        Bitmap bitmap = NavBitmapFactory.mergeBitmap(map,navInfo,bottomInfo,enlargeMap,lineListMap);
         if(bitmap != null)this.videoManager.previewVideoSample(bitmap);
         this.mainHandler.postDelayed(new Runnable() {
             @Override
@@ -951,7 +967,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     private void startPreview(){
         int width = 800;
         int height = 480;
-        int rotation = 180;
+        int rotation = 0;
         float quality = 0.5f;
         SFPreviewVideoConfiguration config = new SFPreviewVideoConfiguration();
         config.setWatchScreenWidth(width);
@@ -960,8 +976,8 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         config.setMirroredHorizontally(false);
         config.setRotation(rotation);
         this.cycleImage();
-//        this.videoManager.startPreviewVideo(config,"11:22:33:44:88:8E");
-        this.videoManager.startPreviewVideo(config,"BB:00:00:AB:00:19");
+        this.videoManager.startPreviewVideo(config,"11:22:33:44:88:8E");
+//        this.videoManager.startPreviewVideo(config,"BB:00:00:AB:00:19");
     }
 
     public   void stopPreview(){
