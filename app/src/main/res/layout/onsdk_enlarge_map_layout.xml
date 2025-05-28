@@ -4,9 +4,10 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center_horizontal"
-    android:background="@drawable/bnav_tab_background_bule">
+    android:background="@color/nsdk_transparent">
     <TextView
         android:id="@+id/enlarge_message"
+        android:visibility="gone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="100米"

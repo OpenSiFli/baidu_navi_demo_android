@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -43,6 +44,7 @@ import com.baidu.mapclient.liteapp.listener.BNDemoNaviListener;
 import com.baidu.mapclient.liteapp.service.MinimapService;
 import com.baidu.navisdk.adapter.BaiduNaviManagerFactory;
 import com.baidu.navisdk.adapter.IBNMiniMapViewManager;
+import com.baidu.navisdk.adapter.IBNOuterSettingParams;
 import com.baidu.navisdk.adapter.struct.BNavLineItem;
 import com.baidu.navisdk.adapter.struct.BNaviInfo;
 import com.baidu.navisdk.adapter.struct.GuidePanelMessage;
@@ -95,6 +97,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
    private TextView fpsTv;
    private LinearLayout topGuideInfoLl;
    private RelativeLayout bottomGuideInfoRl;
+   private RelativeLayout enlargeLayout;
 
 
 
@@ -149,6 +152,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         fpsTv = rootView.findViewById(R.id.bnav_fps_tv);
         topGuideInfoLl = rootView.findViewById(R.id.guide_info);
         bottomGuideInfoRl = rootView.findViewById(R.id.relative_bottom_layout);
+        enlargeLayout = rootView.findViewById(R.id.enlarge_map_layout);
         rootView.findViewById(R.id.btn_open_bg).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -259,7 +263,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
                 }
                 ArrayList<MapElementTypeEnum> arrCloseType = new ArrayList<>();
                 arrCloseType.add(MapElementTypeEnum.Undefined);
-                miniMapViewManager.setMapElementShow(showElement, arrCloseType);
+                miniMapViewManager.setMapElementShow(showElement);
                 showElement = !showElement;
 
             }
@@ -544,6 +548,13 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     }
 
     @Override
+    public void snapshotScope(SnapshotReadyCallback snapshotReadyCallback, boolean b) {
+        if(miniMapViewManager != null){
+            miniMapViewManager.snapshotScope(snapshotReadyCallback,b);
+        }
+    }
+
+    @Override
     public void setFullViewMarginSize(int left, int top, int right, int bottom) {
         if (miniMapViewManager != null) {
             miniMapViewManager.setFullViewMarginSize(0, 0, 0, 0);
@@ -555,6 +566,87 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         if (miniMapViewManager != null) {
             miniMapViewManager.setRouteClickedListener(iRouteClickedListener);
         }
+    }
+
+    @Override
+    public boolean setRotateMode(int i) {
+        if(miniMapViewManager != null){
+            return miniMapViewManager.setRotateMode(i);
+        }
+        return  false;
+    }
+
+    @Override
+    public void setLogoVisibleAndPosition(boolean b, int i, int i1, int i2, int i3, int i4) {
+        if(miniMapViewManager != null){
+            miniMapViewManager.setLogoVisibleAndPosition(b,i,i1,i2,i3,i4);
+        }
+    }
+
+    @Override
+    public boolean setFixedLevelEnable(boolean b) {
+        if(miniMapViewManager != null){
+            return miniMapViewManager.setFixedLevelEnable(b);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean setFixedLevel(float v) {
+        if (miniMapViewManager != null) {
+            return miniMapViewManager.setFixedLevel(v);
+        }
+        return false;
+    }
+
+    @Override
+    public void setCustomStyleEnable(boolean b, String s) {
+        if (miniMapViewManager != null) {
+            miniMapViewManager.setCustomStyleEnable(b, s);
+        }
+    }
+
+    @Override
+    public void setShowCarLogoToEndRedLine(boolean b) {
+        if(miniMapViewManager != null){
+            miniMapViewManager.setShowCarLogoToEndRedLine(b);
+        }
+    }
+
+    @Override
+    public void setIconElementShow(boolean b) {
+        if(miniMapViewManager != null){
+            miniMapViewManager.setIconElementShow(b);
+        }
+    }
+
+    @Override
+    public void hideIconElement(ArrayList<IBNOuterSettingParams.CarIconElementTypeEnum> arrayList) {
+        if(miniMapViewManager != null){
+            miniMapViewManager.hideIconElement(arrayList);
+        }
+    }
+
+    @Override
+    public void setTrafficEnabled(boolean b) {
+        if(miniMapViewManager != null){
+            miniMapViewManager.setTrafficEnabled(b);
+        }
+    }
+
+    @Override
+    public void setNaviRouteHalfWidth(float v, float v1, float v2, float v3) {
+        if(miniMapViewManager != null){
+            miniMapViewManager.setNaviRouteHalfWidth(v,v1,v2,v3);
+        }
+    }
+
+    @Override
+    public boolean setNaviRouteDIYImageToMap(Bitmap bitmap, IBNOuterSettingParams.RouteDIYImageTypeEnum routeDIYImageTypeEnum) {
+        if(miniMapViewManager != null){
+            return miniMapViewManager.setNaviRouteDIYImageToMap(bitmap,routeDIYImageTypeEnum);
+        }
+        return false;
     }
 
     private RecyclerView lanelineList;
@@ -676,9 +768,13 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
                         mRootView.post(new Runnable() {
                             @Override
                             public void run() {
-                                if (guidePanelMessage != null) {
-                                    ((ImageView) mRootView.findViewById(R.id.guideinfo_icon)).setImageDrawable(guidePanelMessage.getIcon());
-                                    ((TextView) mRootView.findViewById(R.id.guideinfo_txt)).setText(guidePanelMessage.getStringBuilder());
+                                if (naviInfo != null) {
+//                                    ((ImageView) mRootView.findViewById(R.id.guideinfo_icon)).setImageDrawable(guidePanelMessage.getIcon());
+//                                    ((TextView) mRootView.findViewById(R.id.guideinfo_txt)).setText(guidePanelMessage.getStringBuilder());
+                                    BitmapDrawable d  = new BitmapDrawable(naviInfo.getTurnIcon());
+                                    String distanceText = getDistanceText(naviInfo.getDistance());
+                                    ((ImageView) mRootView.findViewById(R.id.guideinfo_icon)).setImageDrawable(d);
+                                    ((TextView) mRootView.findViewById(R.id.guideinfo_txt)).setText(distanceText + "进入\n" + naviInfo.getRoadName());
                                 } else {
                                     Toast.makeText(mContext, "诱导信息为空！！", Toast.LENGTH_SHORT).show();
                                 }
@@ -853,12 +949,12 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     }
 
 
-    @Override
-    public void setMapElementShow(boolean show, ArrayList<MapElementTypeEnum> arrCloseType) {
-        if (miniMapViewManager != null) {
-            miniMapViewManager.setMapElementShow(show, arrCloseType);
-        }
-    }
+//    @Override
+//    public void setMapElementShow(boolean show, ArrayList<MapElementTypeEnum> arrCloseType) {
+//        if (miniMapViewManager != null) {
+//            miniMapViewManager.setMapElementShow(show, arrCloseType);
+//        }
+//    }
 
     @Override
     public void setMapDpiScale(float scale) {
@@ -874,6 +970,20 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
             miniMapViewManager.setDIYImageToMap(pngBitmap, imageType);
         }
         return false;
+    }
+
+    @Override
+    public void setMapElementShow(boolean b) {
+        if(miniMapViewManager != null){
+            miniMapViewManager.setMapElementShow(b);
+        }
+    }
+
+    @Override
+    public void hideMapElement(ArrayList<MapElementTypeEnum> arrayList) {
+        if(miniMapViewManager != null){
+            miniMapViewManager.hideMapElement(arrayList);
+        }
     }
 
     @Override
@@ -916,7 +1026,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         }
         Bitmap enlargeMap = null;
         if(enlargeView != null){
-            enlargeMap = makeViewBitmap(enlargeView);
+            enlargeMap = makeViewBitmap(enlargeLayout);
         }
         Bitmap bitmap = NavBitmapFactory.mergeBitmap(map,navInfo,bottomInfo,enlargeMap,lineListMap);
         if(bitmap != null)saveBitmapToFile(bitmap, System.currentTimeMillis() + ".png");
@@ -943,7 +1053,16 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
 
     private void  cycleImage(){
         if(!isPreview)return;
-        Bitmap map = this.getMapViewBitmap();
+        this.miniMapViewManager.snapshotScope(new SnapshotReadyCallback() {
+            @Override
+            public void onSnapshotReady(Bitmap bitmap) {
+                onSnapReady(bitmap);
+            }
+        },true);
+
+    }
+
+    private  void onSnapReady(Bitmap map){
         Bitmap navInfo = makeViewBitmap(this.topGuideInfoLl);
         Bitmap bottomInfo = makeViewBitmap(this.bottomGuideInfoRl);
         Bitmap lineListMap = null;
@@ -961,7 +1080,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
             public void run() {
                 cycleImage();
             }
-        },100);
+        },120);
     }
 
     private void startPreview(){
@@ -1010,5 +1129,15 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
 
     private void toast(String msg){
         Toast.makeText(mContext,msg,Toast.LENGTH_SHORT).show();
+    }
+    private String getDistanceText(int distance){
+        if(distance <= 20){
+            return "现在";
+        }else if(distance < 1000){
+            return distance + "米";
+        }else {
+            float fdistance = distance;
+            return  String.format("%.1f公里",fdistance/1000);
+        }
     }
 }
