@@ -409,6 +409,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     }
 
     public void showOrHide(){
+        if(mRootView == null)return;
             int visibility = mRootView.getVisibility();
             if(visibility == View.VISIBLE){
              visibility = View.INVISIBLE;
@@ -1053,6 +1054,18 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
 
     private void  cycleImage(){
         if(!isPreview)return;
+        if(this.videoManager == null)return;
+        boolean canSendImage = this.videoManager.canSendBitmap();
+        if(!canSendImage){
+            //sdk 还没发完，不需要制作图片
+            this.mainHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    cycleImage();
+                }
+            },50);
+            return;
+        }
         this.miniMapViewManager.snapshotScope(new SnapshotReadyCallback() {
             @Override
             public void onSnapshotReady(Bitmap bitmap) {
@@ -1080,7 +1093,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
             public void run() {
                 cycleImage();
             }
-        },120);
+        },50);
     }
 
     private void startPreview(){
