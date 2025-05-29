@@ -4,16 +4,28 @@
 package com.baidu.mapclient.liteapp;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
 import com.baidu.mapapi.CoordType;
 import com.baidu.mapapi.SDKInitializer;
+import com.baidu.mapclient.liteapp.log.SFLogReceiver;
 import com.baidu.navisdk.adapter.BaiduNaviManagerFactory;
 import com.baidu.navisdk.adapter.IBNLicenseListener;
 import com.baidu.navisdk.adapter.IBaiduNaviManager;
 import com.baidu.navisdk.adapter.struct.BNTTsInitConfig;
 import com.baidu.navisdk.adapter.struct.BNaviInitConfig;
+import com.elvishew.xlog.LogConfiguration;
+import com.elvishew.xlog.LogLevel;
+import com.elvishew.xlog.XLog;
+import com.elvishew.xlog.flattener.PatternFlattener;
+import com.elvishew.xlog.printer.Printer;
+import com.elvishew.xlog.printer.file.FilePrinter;
+import com.elvishew.xlog.printer.file.backup.NeverBackupStrategy;
+import com.elvishew.xlog.printer.file.naming.DateFileNameGenerator;
+
+import java.io.File;
 
 public class ONApplication extends Application {
 
@@ -26,6 +38,7 @@ public class ONApplication extends Application {
         SDKInitializer.initialize(this);
         SDKInitializer.setCoordType(CoordType.GCJ02);
         initNavi();
+        initLog();
     }
 
     private void initNavi() {
@@ -112,5 +125,34 @@ public class ONApplication extends Application {
                 Log.e("loadAuth", "onError" + msg);
             }
         });
+    }
+
+    private void initLog(){
+        String logFollder = getDeviceLogPath(this);
+        LogConfiguration config = new LogConfiguration.Builder()
+                .logLevel(LogLevel.ALL)
+                .build();
+
+
+        Printer filePrinter = new FilePrinter                      // Printer that print(save) the log to file
+                .Builder(logFollder)                         // Specify the directory path of log file(s)
+                .fileNameGenerator(new DateFileNameGenerator())        // Default: ChangelessFileNameGenerator("log")
+                .backupStrategy(new NeverBackupStrategy())             // Default: FileSizeBackupStrategy(1024 * 1024)
+//                .cleanStrategy(new FileLastModifiedCleanStrategy(MAX_TIME))     // Default: NeverCleanStrategy()
+                .flattener(new PatternFlattener("{d MM-dd HH:mm:ss.SSS} [{t}/{l}] {m}"))                          // Default: DefaultFlattener
+//                .writer(new MyWriter())                                // Default: SimpleWriter
+                .build();
+
+        XLog.init(                                                 // Initialize XLog
+                config,                                                // Specify the log configuration, if not specified, will use new LogConfiguration.Builder().build()
+                filePrinter);
+        SFLogReceiver.getInstance().startReceiveLog();
+    }
+
+    public static String getDeviceLogPath(Context context){
+        String root = context.getExternalFilesDir(null) + "/DeviceLogs";
+        File file = new File(root);
+        file.mkdirs();
+        return root;
     }
 }

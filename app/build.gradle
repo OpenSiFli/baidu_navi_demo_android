@@ -17,8 +17,8 @@ compileSdkVersion 31
         applicationId "com.baidu.mapclient.liteapp"
         minSdkVersion 21
         targetSdkVersion 31
-        versionCode 7
-        versionName "1.0.7"
+        versionCode 8
+        versionName "1.0.8"
 
         multiDexEnabled true
 
@@ -41,6 +41,14 @@ compileSdkVersion 31
     compileOptions {
         sourceCompatibility = 1.8
         targetCompatibility = 1.8
+    }
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def appName = "SiFli-PreviewNav" // 替换为你的应用名称
+            def versionName = variant.versionName
+            def buildType = variant.buildType.name
+            outputFileName = "${appName}-${buildType}-${versionName}.apk"
+        }
     }
 }
 
@@ -68,5 +76,6 @@ dependencies {
     implementation (name: 'siflicore-release', ext:'aar')
     implementation (name: 'sifliotasdk-release', ext:'aar')
     implementation("com.madgag.spongycastle:core:1.58.0.0")
-    
+    implementation 'com.elvishew:xlog:1.11.1'
+
 }
