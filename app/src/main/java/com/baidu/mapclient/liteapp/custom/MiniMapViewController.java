@@ -1064,17 +1064,17 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     private void  cycleImage(){
         if(!isPreview)return;
         if(this.videoManager == null)return;
-        boolean canSendImage = this.videoManager.canSendBitmap();
-        if(!canSendImage){
-            //sdk 还没发完，不需要制作图片
-            this.mBackgroundHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    cycleImage();
-                }
-            });
-            return;
-        }
+//        boolean canSendImage = this.videoManager.canSendBitmap();
+//        if(!canSendImage){
+//            //sdk 还没发完，不需要制作图片
+//            this.mBackgroundHandler.post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    cycleImage();
+//                }
+//            });
+//            return;
+//        }
         this.miniMapViewManager.snapshotScope(new SnapshotReadyCallback() {
             @Override
             public void onSnapshotReady(Bitmap bitmap) {
@@ -1173,6 +1173,24 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
 
     @Override
     public void onImageMake(byte[] bytes) {
+
+    }
+
+    @Override
+    public void onHandShake() {
+        SFLog.i(TAG,"onFrameSent");
+        this.cycleImage();
+    }
+
+    @Override
+    public void onFrameSent() {
+        SFLog.i(TAG,"onFrameSent");
+        this.mBackgroundHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                cycleImage();
+            }
+        });
 
     }
 

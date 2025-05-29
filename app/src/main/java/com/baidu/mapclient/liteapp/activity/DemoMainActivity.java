@@ -9,6 +9,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -199,6 +200,7 @@ public class DemoMainActivity extends Activity {
         mCruiserBtn = findViewById(R.id.cruiserBtn);
         mGotoSettingsBtn = findViewById(R.id.gotoSettingsBtn);
         mSelectNodeBtn = findViewById(R.id.selectNodeBtn);
+        mGotoSettingsBtn.setText("导航设置" + getVersionName(this));
         RecyclerView recyclerView = findViewById(R.id.navi_setting_page_item_recycle);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         List<IBNOuterSettingParams.BNavSettingItem> list = new ArrayList<>();
@@ -518,5 +520,16 @@ public class DemoMainActivity extends Activity {
         super.onDestroy();
         unregisterReceiver(mReceiver);
         stopService(new Intent(this, ForegroundService.class));
+    }
+
+    public static String getVersionName(Context context) {
+        try {
+            PackageInfo pInfo = context.getPackageManager()
+                    .getPackageInfo(context.getPackageName(), 0);
+            return pInfo.versionName + "(" + pInfo.versionCode + ")";
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+            return "";
+        }
     }
 }
