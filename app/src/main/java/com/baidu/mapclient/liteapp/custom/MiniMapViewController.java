@@ -11,6 +11,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Looper;
 import android.provider.Settings;
 import android.text.SpannableStringBuilder;
@@ -50,6 +51,7 @@ import com.baidu.navisdk.adapter.struct.BNaviInfo;
 import com.baidu.navisdk.adapter.struct.GuidePanelMessage;
 import com.baidu.navisdk.adapter.IBNLicenseListener;
 import com.sifli.siflicore.error.SFError;
+import com.sifli.siflicore.log.SFLog;
 import com.sifli.sifliotasdk.manager.ISFPreviewVideoManagerCallback;
 import com.sifli.sifliotasdk.manager.SFPreviewVideoConfiguration;
 import com.sifli.sifliotasdk.manager.SFPreviewVideoManager;
@@ -98,7 +100,9 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
    private LinearLayout topGuideInfoLl;
    private RelativeLayout bottomGuideInfoRl;
    private RelativeLayout enlargeLayout;
-
+    // handler
+    private Handler mBackgroundHandler;
+    private HandlerThread mBackgroundThread;
 
 
     public MiniMapViewController() {
@@ -139,6 +143,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     }
 
     private void initPreviewNav(){
+        this.startBackgroundThread();
         this.videoManager = SFPreviewVideoManager.getInstance();
         this.videoManager.setCallback(this);
         Activity a = (Activity)mContext;
@@ -479,6 +484,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         }
 
         removeNaviListener();
+        this.stopBackgroundThread();
         if(this.videoManager != null){
             this.videoManager.stop();
         }
@@ -1058,12 +1064,12 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         boolean canSendImage = this.videoManager.canSendBitmap();
         if(!canSendImage){
             //sdk 还没发完，不需要制作图片
-            this.mainHandler.postDelayed(new Runnable() {
+            this.mBackgroundHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     cycleImage();
                 }
-            },50);
+            });
             return;
         }
         this.miniMapViewManager.snapshotScope(new SnapshotReadyCallback() {
@@ -1088,12 +1094,12 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         }
         Bitmap bitmap = NavBitmapFactory.mergeBitmap(map,navInfo,bottomInfo,enlargeMap,lineListMap);
         if(bitmap != null)this.videoManager.previewVideoSample(bitmap);
-        this.mainHandler.postDelayed(new Runnable() {
+        this.mBackgroundHandler.post(new Runnable() {
             @Override
             public void run() {
                 cycleImage();
             }
-        },50);
+        });
     }
 
     private void startPreview(){
@@ -1115,6 +1121,33 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     public   void stopPreview(){
         this.isPreview = false;
         this.videoManager.endPreviewVideo();
+    }
+
+    private void startBackgroundThread() {
+        if (mBackgroundThread == null || mBackgroundHandler == null) {
+            Log.v(TAG, "startBackgroundThread");
+            mBackgroundThread = new HandlerThread("Sol2ModuleBackground");
+            mBackgroundThread.start();
+            mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
+        }
+    }
+
+    private void stopBackgroundThread() {
+        Log.v(TAG, "stopBackgroundThread");
+        try {
+            if(mBackgroundHandler != null){
+                mBackgroundHandler.removeCallbacksAndMessages(null);
+                mBackgroundHandler = null;
+            }
+            if(mBackgroundThread != null){
+                mBackgroundThread.quitSafely();
+                mBackgroundThread = null;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            SFLog.e(TAG,e.toString());
+        }
     }
 
     @Override
