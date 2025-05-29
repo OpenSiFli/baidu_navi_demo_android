@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+import android.os.Process;
 import android.provider.Settings;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -1064,17 +1065,17 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     private void  cycleImage(){
         if(!isPreview)return;
         if(this.videoManager == null)return;
-//        boolean canSendImage = this.videoManager.canSendBitmap();
-//        if(!canSendImage){
-//            //sdk 还没发完，不需要制作图片
-//            this.mBackgroundHandler.post(new Runnable() {
-//                @Override
-//                public void run() {
-//                    cycleImage();
-//                }
-//            });
-//            return;
-//        }
+        boolean canSendImage = this.videoManager.canSendBitmap();
+        if(!canSendImage){
+            //sdk 还没发完，不需要制作图片
+            this.mBackgroundHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    cycleImage();
+                }
+            },50);
+            return;
+        }
         this.miniMapViewManager.snapshotScope(new SnapshotReadyCallback() {
             @Override
             public void onSnapshotReady(Bitmap bitmap) {
@@ -1097,12 +1098,12 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         }
         Bitmap bitmap = NavBitmapFactory.mergeBitmap(map,navInfo,bottomInfo,enlargeMap,lineListMap);
         if(bitmap != null)this.videoManager.previewVideoSample(bitmap);
-        this.mBackgroundHandler.post(new Runnable() {
+        this.mBackgroundHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 cycleImage();
             }
-        });
+        },50);
     }
 
     private void startPreview(){
@@ -1129,7 +1130,14 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     private void startBackgroundThread() {
         if (mBackgroundThread == null || mBackgroundHandler == null) {
             Log.v(TAG, "startBackgroundThread");
-            mBackgroundThread = new HandlerThread("Sol2ModuleBackground");
+            mBackgroundThread = new HandlerThread("Sol2ModuleBackground") {
+                @Override
+                public void run() {
+                    Process.setThreadPriority(Process.THREAD_PRIORITY_DISPLAY); // 设置为显示优先级
+                    super.run();
+                }
+            };
+
             mBackgroundThread.start();
             mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
         }
@@ -1179,18 +1187,18 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     @Override
     public void onHandShake() {
         SFLog.i(TAG,"onFrameSent");
-        this.cycleImage();
+//        this.cycleImage();
     }
 
     @Override
     public void onFrameSent() {
         SFLog.i(TAG,"onFrameSent");
-        this.mBackgroundHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                cycleImage();
-            }
-        });
+//        this.mBackgroundHandler.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                cycleImage();
+//            }
+//        });
 
     }
 
