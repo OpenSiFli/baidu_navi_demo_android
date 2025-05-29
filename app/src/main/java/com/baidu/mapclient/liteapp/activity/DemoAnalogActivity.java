@@ -154,8 +154,11 @@ public class DemoAnalogActivity extends FragmentActivity implements ISFPreviewVi
         super.onDestroy();
         mRouteGuideManager.onDestroy(false);
         mRouteGuideManager = null;
-        if(videoManager != null){
-            videoManager.stop();
+//        if(videoManager != null){
+//            videoManager.stop();
+//        }
+        if(miniMapViewController != null){
+            miniMapViewController.onDestroy();
         }
     }
 

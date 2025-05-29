@@ -475,6 +475,8 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
 
     @Override
     public void onDestroy() {
+        SFLog.i(TAG,"onDestroy mini");
+        this.isPreview = false;
         if (miniMapViewManager != null) {
             miniMapViewManager.onDestroy();
         }
@@ -484,6 +486,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         }
 
         removeNaviListener();
+
         this.stopBackgroundThread();
         if(this.videoManager != null){
             this.videoManager.stop();
