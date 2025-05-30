@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -51,6 +52,7 @@ public class DemoAnalogActivity extends FragmentActivity implements ISFPreviewVi
     private boolean isPreview;
     private Button previewBtn;
     private TextView fpsTv;
+    private EditText macEt;
     private Handler mainHandler = new Handler(Looper.getMainLooper());
 
     private FrameLayout mapContainer = null;
@@ -100,6 +102,7 @@ public class DemoAnalogActivity extends FragmentActivity implements ISFPreviewVi
 
         this.previewBtn = findViewById(R.id.analog_start_preview_btn);
         this.fpsTv = findViewById(R.id.analog_fps_tv);
+        this.macEt = findViewById(R.id.analog_mac_et);
 //        BaiduNaviManagerFactory.getMapManager().getMapView().getMap();
         this.videoManager = SFPreviewVideoManager.getInstance();
         this.videoManager.setCallback(this);
@@ -121,6 +124,8 @@ public class DemoAnalogActivity extends FragmentActivity implements ISFPreviewVi
             miniMapViewController.onDestroy();
             miniMap = null;
         }
+        String targetMac = this.macEt.getText().toString();
+        miniMapViewController.setTargetMac(targetMac);
     }
 
     @Override

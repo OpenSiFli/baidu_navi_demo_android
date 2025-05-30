@@ -104,6 +104,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     // handler
     private Handler mBackgroundHandler;
     private HandlerThread mBackgroundThread;
+    private String targetMac;
 
 
     public MiniMapViewController() {
@@ -1107,6 +1108,10 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     }
 
     private void startPreview(){
+        if(this.targetMac == null || this.targetMac.isEmpty()){
+            toast("target mac is null or empty");
+            return;
+        }
         int width = 800;
         int height = 480;
         int rotation = 0;
@@ -1118,7 +1123,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         config.setMirroredHorizontally(false);
         config.setRotation(rotation);
         this.cycleImage();
-        this.videoManager.startPreviewVideo(config,"11:22:33:44:88:8E");
+        this.videoManager.startPreviewVideo(config,targetMac);
 //        this.videoManager.startPreviewVideo(config,"BB:00:00:AB:00:19");
     }
 
@@ -1214,5 +1219,13 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
             float fdistance = distance;
             return  String.format("%.1f公里",fdistance/1000);
         }
+    }
+
+    public String getTargetMac() {
+        return targetMac;
+    }
+
+    public void setTargetMac(String targetMac) {
+        this.targetMac = targetMac;
     }
 }

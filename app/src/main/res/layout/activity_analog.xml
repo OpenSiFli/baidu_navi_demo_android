@@ -73,6 +73,14 @@
             android:text="隐藏/显示"
             android:layout_marginBottom="20dp"
             android:onClick="onClick"/>
+         <EditText
+             android:id="@+id/analog_mac_et"
+             android:layout_above="@id/analog_start_hide_mini_btn"
+             android:layout_width="200dp"
+             android:layout_height="30dp"
+             android:background="#999999"
+             android:text="11:22:33:44:88:8E"
+             />
 
     </RelativeLayout>
 
