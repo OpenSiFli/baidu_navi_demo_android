@@ -79,7 +79,7 @@
              android:layout_width="200dp"
              android:layout_height="30dp"
              android:background="#999999"
-             android:text="11:22:33:44:88:8E"
+             android:text="AA:22:33:44:55:AA"
              />
 
     </RelativeLayout>
