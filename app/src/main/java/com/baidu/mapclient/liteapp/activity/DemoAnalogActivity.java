@@ -44,7 +44,7 @@ import com.sifli.sifliotasdk.manager.SFTransmissionMode;
 public class DemoAnalogActivity extends FragmentActivity implements ISFPreviewVideoManagerCallback {
 
     private static final String TAG = DemoAnalogActivity.class.getName();
-
+    public final static String EXTRA_BLE_DEVICE = "EXTRA_BLE_DEVICE";
     private IBNRouteGuideManager mRouteGuideManager;
 
     private IBNaviListener.DayNightMode mMode = IBNaviListener.DayNightMode.DAY;
@@ -107,6 +107,11 @@ public class DemoAnalogActivity extends FragmentActivity implements ISFPreviewVi
         this.videoManager = SFPreviewVideoManager.getInstance();
         this.videoManager.setCallback(this);
         this.videoManager.init(this.getApplication(), SFTransmissionMode.TRANSMISSION_MODE_SPP);
+
+        String mac = getIntent().getStringExtra(EXTRA_BLE_DEVICE);
+        if(mac != null){
+            this.macEt.setText(mac);
+        }
     }
 
     private View miniMap = null;

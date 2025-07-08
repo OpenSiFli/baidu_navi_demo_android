@@ -80,9 +80,10 @@ public class BNDemoUtils {
         activity.startActivity(it);
     }
 
-    public static void gotoAnalog(Activity activity) {
-        Intent it = new Intent(activity, DemoAnalogActivity.class);
-        activity.startActivity(it);
+    public static void gotoAnalog(Activity activity,String targetMac) {
+        Intent intent = new Intent(activity, DemoAnalogActivity.class);
+        if(targetMac != null) intent.putExtra(DemoAnalogActivity.EXTRA_BLE_DEVICE, targetMac);
+        activity.startActivity(intent);
     }
 
     public static void gotoCustomGuide(Activity activity, int topHeight, int bottomHeight) {

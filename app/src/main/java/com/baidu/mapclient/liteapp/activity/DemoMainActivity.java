@@ -35,6 +35,7 @@ import com.baidu.mapclient.liteapp.BNDemoFactory;
 import com.baidu.mapclient.liteapp.BNDemoUtils;
 import com.baidu.mapclient.liteapp.ForegroundService;
 import com.baidu.mapclient.liteapp.R;
+import com.baidu.mapclient.liteapp.devicescan.DeviceScanActivity;
 import com.baidu.navisdk.adapter.BNRoutePlanNode;
 import com.baidu.navisdk.adapter.BNaviCommonParams;
 import com.baidu.navisdk.adapter.BaiduNaviManagerFactory;
@@ -63,6 +64,7 @@ public class DemoMainActivity extends Activity {
     };
 
     private static final int AUTH_BASE_REQUEST_CODE = 1;
+    private static final int REQUEST_CODE_SEARCH_DEVICE = 2;
 
     private Button mNaviBtn = null;
     private Button mTruckBtn = null;
@@ -75,9 +77,12 @@ public class DemoMainActivity extends Activity {
     private Button mSelectNodeBtn = null;
     private Button mGotoSettingsBtn = null;
     private Button limitChange = null;
+    private Button searchDeviceBtn;
+    private String targetMac;
 
     private BroadcastReceiver mReceiver;
     private int mPageType = BNDemoUtils.NORMAL;
+
     private final Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(@NonNull Message msg) {
@@ -108,7 +113,7 @@ public class DemoMainActivity extends Activity {
                             BNDemoUtils.gotoNavi(DemoMainActivity.this);
                             break;
                         case BNDemoUtils.ANALOG:
-                            BNDemoUtils.gotoAnalog(DemoMainActivity.this);
+                            BNDemoUtils.gotoAnalog(DemoMainActivity.this,targetMac);
                             break;
                         case BNDemoUtils.EXTGPS:
                             BNDemoUtils.gotoExtGps(DemoMainActivity.this);
@@ -201,6 +206,7 @@ public class DemoMainActivity extends Activity {
         mGotoSettingsBtn = findViewById(R.id.gotoSettingsBtn);
         mSelectNodeBtn = findViewById(R.id.selectNodeBtn);
         mGotoSettingsBtn.setText("导航设置" + getVersionName(this));
+        searchDeviceBtn = findViewById(R.id.navi_search_device_btn);
         RecyclerView recyclerView = findViewById(R.id.navi_setting_page_item_recycle);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         List<IBNOuterSettingParams.BNavSettingItem> list = new ArrayList<>();
@@ -443,6 +449,12 @@ public class DemoMainActivity extends Activity {
                 BaiduNaviManagerFactory.getCommonSettingManager().setTruckLimitSwitch(!limitChange.isSelected());
             }
         });
+        searchDeviceBtn.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startSearchDevice();
+            }
+        });
     }
     public static HashMap<IBNOuterSettingParams.BNavSettingItem, Boolean> mSdkFunc = new HashMap<>();
     private void initNaviViewFunc() {
@@ -532,4 +544,23 @@ public class DemoMainActivity extends Activity {
             return "";
         }
     }
+
+    private void startSearchDevice(){
+        Intent intent = new Intent(DemoMainActivity.this, DeviceScanActivity.class);
+
+        startActivityForResult(intent,REQUEST_CODE_SEARCH_DEVICE);
+    }
+
+   @Override
+   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+       super.onActivityResult(requestCode, resultCode, data);
+       if(requestCode == REQUEST_CODE_SEARCH_DEVICE){
+           if(resultCode == Activity.RESULT_OK){
+               this.targetMac = data.getStringExtra(DeviceScanActivity.EXTRA_BLE_DEVICE);
+               this.searchDeviceBtn.setText("搜索蓝牙 " + targetMac);
+           }
+       }
+    }
+
 }

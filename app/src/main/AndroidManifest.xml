@@ -123,6 +123,9 @@
 
         <activity android:name=".activity.BNDemoLightNaviActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden"/>
+        <activity
+            android:name=".devicescan.DeviceScanActivity"
+            android:screenOrientation="portrait" />
 
         <service android:name=".ForegroundService" />
     </application>

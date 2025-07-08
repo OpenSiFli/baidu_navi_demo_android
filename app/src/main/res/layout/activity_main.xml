@@ -125,6 +125,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="设置页调整" />
+        <Button
+            android:id="@+id/navi_search_device_btn"
+            android:background="@drawable/bnav_setting_btn_bg_selector"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="搜索蓝牙" />
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/navi_setting_page_item_recycle"
             android:layout_width="wrap_content"

@@ -3,6 +3,13 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="main_bg">#f7f8fa</color>
+
+    <color name="sf_333333">#333333</color>
+    <color name="sf_f5f5f5">#f5f5f5</color>
+    <color name="sf_999999">#999999</color>
+    <color name="sf_666666">#666666</color>
+    <color name="transparent">#00000000</color>
 
     <color name="nsdk_cl_bg_d_mm">#dddddd</color>
     <color name="nsdk_route_sort_setting_default">#3385ff</color>
