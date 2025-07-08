@@ -1063,18 +1063,36 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         return bitmap;
     }
 
-    private void  cycleImage(){
+//    private void  cycleImage(){
+//        if(!isPreview)return;
+//        if(this.videoManager == null)return;
+//        boolean canSendImage = this.videoManager.canSendBitmap();
+//        if(!canSendImage){
+//            //sdk 还没发完，不需要制作图片
+//            this.mBackgroundHandler.postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                    cycleImage();
+//                }
+//            },50);
+//            return;
+//        }
+//        this.miniMapViewManager.snapshotScope(new SnapshotReadyCallback() {
+//            @Override
+//            public void onSnapshotReady(Bitmap bitmap) {
+//                onSnapReady(bitmap);
+//            }
+//        },true);
+//
+//    }
+
+    private void  sendSingleImage(){
         if(!isPreview)return;
         if(this.videoManager == null)return;
         boolean canSendImage = this.videoManager.canSendBitmap();
         if(!canSendImage){
             //sdk 还没发完，不需要制作图片
-            this.mBackgroundHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    cycleImage();
-                }
-            },50);
+            SFLog.e(TAG,"sendSingleImage when videoManager is busy");
             return;
         }
         this.miniMapViewManager.snapshotScope(new SnapshotReadyCallback() {
@@ -1099,12 +1117,12 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         }
         Bitmap bitmap = NavBitmapFactory.mergeBitmap(map,navInfo,bottomInfo,enlargeMap,lineListMap);
         if(bitmap != null)this.videoManager.previewVideoSample(bitmap);
-        this.mBackgroundHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                cycleImage();
-            }
-        },50);
+//        this.mBackgroundHandler.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                cycleImage();
+//            }
+//        },50);
     }
 
     private void startPreview(){
@@ -1122,7 +1140,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         config.setJpegQuality(quality);
         config.setMirroredHorizontally(false);
         config.setRotation(rotation);
-        this.cycleImage();
+//        this.cycleImage();
         this.videoManager.startPreviewVideo(config,targetMac);
 //        this.videoManager.startPreviewVideo(config,"BB:00:00:AB:00:19");
     }
@@ -1190,22 +1208,17 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     }
 
     @Override
-    public void onHandShake() {
-        SFLog.i(TAG,"onFrameSent");
-//        this.cycleImage();
+    public void onMakeNextFrame(float process) {
+        SFLog.i(TAG,"onMakeNextFrame %.1f",process);
+        this.sendSingleImage();
     }
 
     @Override
-    public void onFrameSent() {
-        SFLog.i(TAG,"onFrameSent");
-//        this.mBackgroundHandler.post(new Runnable() {
-//            @Override
-//            public void run() {
-//                cycleImage();
-//            }
-//        });
-
+    public void onReadyToSendImage() {
+        SFLog.i(TAG,"onReadyToSendImage");
+        this.sendSingleImage();
     }
+
 
     private void toast(String msg){
         Toast.makeText(mContext,msg,Toast.LENGTH_SHORT).show();

@@ -41,7 +41,7 @@ import com.sifli.sifliotasdk.manager.SFTransmissionMode;
  * Time: 2020-03-30
  * Description:
  */
-public class DemoAnalogActivity extends FragmentActivity implements ISFPreviewVideoManagerCallback {
+public class DemoAnalogActivity extends FragmentActivity  {
 
     private static final String TAG = DemoAnalogActivity.class.getName();
     public final static String EXTRA_BLE_DEVICE = "EXTRA_BLE_DEVICE";
@@ -49,7 +49,7 @@ public class DemoAnalogActivity extends FragmentActivity implements ISFPreviewVi
     private IBNRouteGuideManager mRouteGuideManager;
 
     private IBNaviListener.DayNightMode mMode = IBNaviListener.DayNightMode.DAY;
-    private SFPreviewVideoManager videoManager;
+//    private SFPreviewVideoManager videoManager;
     private boolean isPreview;
     private Button previewBtn;
     private TextView fpsTv;
@@ -115,9 +115,9 @@ public class DemoAnalogActivity extends FragmentActivity implements ISFPreviewVi
             this.pauseBtn.setVisibility(View.INVISIBLE);
         }
 //        BaiduNaviManagerFactory.getMapManager().getMapView().getMap();
-        this.videoManager = SFPreviewVideoManager.getInstance();
-        this.videoManager.setCallback(this);
-        this.videoManager.init(this.getApplication(), SFTransmissionMode.TRANSMISSION_MODE_SPP);
+//        this.videoManager = SFPreviewVideoManager.getInstance();
+//        this.videoManager.setCallback(this);
+//        this.videoManager.init(this.getApplication(), SFTransmissionMode.TRANSMISSION_MODE_SPP);
 
         String mac = getIntent().getStringExtra(EXTRA_BLE_DEVICE);
         if(mac != null){
@@ -255,10 +255,10 @@ public class DemoAnalogActivity extends FragmentActivity implements ISFPreviewVi
             isPreview = !isPreview;
 
             if (isPreview) {
-                startPreview();
+//                startPreview();
                 previewBtn.setText("停止预览");
             } else {
-                stopPreview();
+//                stopPreview();
                 previewBtn.setText("开始预览");
             }
         }else if(R.id.analog_open_mini_btn == view.getId()){
@@ -270,75 +270,75 @@ public class DemoAnalogActivity extends FragmentActivity implements ISFPreviewVi
         }
     }
 
-    private void  cycleImage(){
-        if(!isPreview)return;
+//    private void  cycleImage(){
+//        if(!isPreview)return;
+//
+//       BaiduNaviManagerFactory.getMapManager().getMapView().getMap().snapshot(new BaiduMap.SnapshotReadyCallback() {
+//           @Override
+//           public void onSnapshotReady(Bitmap bitmap) {
+//               videoManager.previewVideoSample(bitmap);
+//               mainHandler.postDelayed(new Runnable() {
+//                   @Override
+//                   public void run() {
+//                       cycleImage();
+//                   }
+//               },100);
+//           }
+//       });
+//
+//    }
 
-       BaiduNaviManagerFactory.getMapManager().getMapView().getMap().snapshot(new BaiduMap.SnapshotReadyCallback() {
-           @Override
-           public void onSnapshotReady(Bitmap bitmap) {
-               videoManager.previewVideoSample(bitmap);
-               mainHandler.postDelayed(new Runnable() {
-                   @Override
-                   public void run() {
-                       cycleImage();
-                   }
-               },100);
-           }
-       });
+//    private void startPreview(){
+//        int width = 800;
+//        int height = 480;
+//        int rotation = 90;
+//        float quality = 0.5f;
+//        SFPreviewVideoConfiguration config = new SFPreviewVideoConfiguration();
+//        config.setWatchScreenWidth(width);
+//        config.setWatchScreenHeight(height);
+//        config.setJpegQuality(quality);
+//        config.setMirroredHorizontally(false);
+//        config.setRotation(rotation);
+//        this.cycleImage();
+//        this.videoManager.startPreviewVideo(config,"11:22:33:44:88:8E");
+//    }
 
-    }
+//    private  void stopPreview(){
+//        this.videoManager.stop();
+//    }
 
-    private void startPreview(){
-        int width = 800;
-        int height = 480;
-        int rotation = 90;
-        float quality = 0.5f;
-        SFPreviewVideoConfiguration config = new SFPreviewVideoConfiguration();
-        config.setWatchScreenWidth(width);
-        config.setWatchScreenHeight(height);
-        config.setJpegQuality(quality);
-        config.setMirroredHorizontally(false);
-        config.setRotation(rotation);
-        this.cycleImage();
-        this.videoManager.startPreviewVideo(config,"11:22:33:44:88:8E");
-    }
+//    @Override
+//    public void completeWithError(SFPreviewVideoManager sfPreviewVideoManager, SFError sfError) {
+//        this.isPreview = false;
+//        this.previewBtn.setText("开始预览");
+//        String msg = String.format("completeWithError:%s",sfError);
+//        toast(msg);
+//    }
 
-    private  void stopPreview(){
-        this.videoManager.stop();
-    }
-
-    @Override
-    public void completeWithError(SFPreviewVideoManager sfPreviewVideoManager, SFError sfError) {
-        this.isPreview = false;
-        this.previewBtn.setText("开始预览");
-        String msg = String.format("completeWithError:%s",sfError);
-        toast(msg);
-    }
-
-    @Override
-    public void updateManagerState(SFPreviewVideoManager sfPreviewVideoManager, int i) {
-
-    }
-
-    @Override
-    public void onFps(SFPreviewVideoManager sfPreviewVideoManager, float v) {
-        this.fpsTv.setText("" + v);
-    }
-
-    @Override
-    public void onImageMake(byte[] bytes) {
-
-    }
-
-    @Override
-    public void onHandShake() {
-
-    }
-
-    @Override
-    public void onFrameSent() {
-
-    }
+//    @Override
+//    public void updateManagerState(SFPreviewVideoManager sfPreviewVideoManager, int i) {
+//
+//    }
+//
+//    @Override
+//    public void onFps(SFPreviewVideoManager sfPreviewVideoManager, float v) {
+//        this.fpsTv.setText("" + v);
+//    }
+//
+//    @Override
+//    public void onImageMake(byte[] bytes) {
+//
+//    }
+//
+//    @Override
+//    public void onHandShake() {
+//
+//    }
+//
+//    @Override
+//    public void onFrameSent() {
+//
+//    }
 
     private void toast(String msg){
         Toast.makeText(this,msg,Toast.LENGTH_SHORT).show();
