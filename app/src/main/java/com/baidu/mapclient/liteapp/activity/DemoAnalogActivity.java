@@ -45,6 +45,7 @@ public class DemoAnalogActivity extends FragmentActivity implements ISFPreviewVi
 
     private static final String TAG = DemoAnalogActivity.class.getName();
     public final static String EXTRA_BLE_DEVICE = "EXTRA_BLE_DEVICE";
+    public final static String EXTRA_IS_REAL_NAV = "EXTRA_IS_REAL_NAV";
     private IBNRouteGuideManager mRouteGuideManager;
 
     private IBNaviListener.DayNightMode mMode = IBNaviListener.DayNightMode.DAY;
@@ -57,6 +58,9 @@ public class DemoAnalogActivity extends FragmentActivity implements ISFPreviewVi
 
     private FrameLayout mapContainer = null;
     public MiniMapViewController miniMapViewController = new MiniMapViewController();
+    private boolean isRealNavi = false;
+    private Button resumeBtn;
+    private Button pauseBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,8 +75,9 @@ public class DemoAnalogActivity extends FragmentActivity implements ISFPreviewVi
         BaiduNaviManagerFactory.getProfessionalNaviSettingManager()
                 .setAnalogSwitchButtonVisible(false);
 
+        isRealNavi = getIntent().getBooleanExtra(EXTRA_IS_REAL_NAV,false);
         Bundle params = new Bundle();
-        params.putBoolean(BNaviCommonParams.ProGuideKey.IS_REALNAVI, false);
+        params.putBoolean(BNaviCommonParams.ProGuideKey.IS_REALNAVI, isRealNavi);
         params.putBoolean(BNaviCommonParams.ProGuideKey.IS_SUPPORT_FULL_SCREEN,
                 supportFullScreen());
         mRouteGuideManager = BaiduNaviManagerFactory.getRouteGuideManager();
@@ -103,6 +108,12 @@ public class DemoAnalogActivity extends FragmentActivity implements ISFPreviewVi
         this.previewBtn = findViewById(R.id.analog_start_preview_btn);
         this.fpsTv = findViewById(R.id.analog_fps_tv);
         this.macEt = findViewById(R.id.analog_mac_et);
+        this.resumeBtn = findViewById(R.id.resume);
+        this.pauseBtn = findViewById(R.id.pause);
+        if(this.isRealNavi){
+            this.resumeBtn.setVisibility(View.INVISIBLE);
+            this.pauseBtn.setVisibility(View.INVISIBLE);
+        }
 //        BaiduNaviManagerFactory.getMapManager().getMapView().getMap();
         this.videoManager = SFPreviewVideoManager.getInstance();
         this.videoManager.setCallback(this);

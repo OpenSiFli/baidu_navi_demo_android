@@ -14,6 +14,7 @@ import android.view.WindowManager;
 
 import androidx.fragment.app.FragmentActivity;
 
+import com.baidu.mapclient.liteapp.custom.MiniMapViewController;
 import com.baidu.navisdk.adapter.BNaviCommonParams;
 import com.baidu.navisdk.adapter.BaiduNaviManagerFactory;
 import com.baidu.navisdk.adapter.IBNRouteGuideManager;
@@ -28,9 +29,10 @@ import com.baidu.navisdk.adapter.struct.BNRoutePlanInfos;
 public class DemoGuideActivity extends FragmentActivity {
 
     private static final String TAG = DemoGuideActivity.class.getName();
-
+    public final static String EXTRA_BLE_DEVICE = "EXTRA_BLE_DEVICE";
     private IBNRouteGuideManager mRouteGuideManager;
     private IBNaviListener.DayNightMode mMode = IBNaviListener.DayNightMode.DAY;
+    public MiniMapViewController miniMapViewController = new MiniMapViewController();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

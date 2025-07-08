@@ -70,9 +70,14 @@ public class BNDemoUtils {
     public static final String KEY_GB_MINI_MAP_OPEN_BG_DRAW = "gb_mini_map_open_bg_draw";
 
 
-    public static void gotoNavi(Activity activity) {
-        Intent it = new Intent(activity, DemoGuideActivity.class);
-        activity.startActivity(it);
+    public static void gotoNavi(Activity activity,String targetMac) {
+//        Intent it = new Intent(activity, DemoGuideActivity.class);
+//        if(targetMac != null) it.putExtra(DemoGuideActivity.EXTRA_BLE_DEVICE, targetMac);
+//        activity.startActivity(it);
+        Intent intent = new Intent(activity, DemoAnalogActivity.class);
+        if(targetMac != null) intent.putExtra(DemoAnalogActivity.EXTRA_BLE_DEVICE, targetMac);
+        intent.putExtra(DemoAnalogActivity.EXTRA_IS_REAL_NAV,true);
+        activity.startActivity(intent);
     }
 
     public static void gotoExtGps(Activity activity) {
@@ -83,6 +88,7 @@ public class BNDemoUtils {
     public static void gotoAnalog(Activity activity,String targetMac) {
         Intent intent = new Intent(activity, DemoAnalogActivity.class);
         if(targetMac != null) intent.putExtra(DemoAnalogActivity.EXTRA_BLE_DEVICE, targetMac);
+        intent.putExtra(DemoAnalogActivity.EXTRA_IS_REAL_NAV,false);
         activity.startActivity(intent);
     }
 

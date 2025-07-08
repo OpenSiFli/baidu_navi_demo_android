@@ -110,7 +110,7 @@ public class DemoMainActivity extends Activity {
                             "算路成功准备进入导航", Toast.LENGTH_SHORT).show();
                     switch (mPageType) {
                         case BNDemoUtils.NORMAL:
-                            BNDemoUtils.gotoNavi(DemoMainActivity.this);
+                            BNDemoUtils.gotoNavi(DemoMainActivity.this,targetMac);
                             break;
                         case BNDemoUtils.ANALOG:
                             BNDemoUtils.gotoAnalog(DemoMainActivity.this,targetMac);
