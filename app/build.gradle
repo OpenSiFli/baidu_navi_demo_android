@@ -11,14 +11,14 @@ android {
     }
     useLibrary 'org.apache.http.legacy'
 
-compileSdkVersion 31
+compileSdkVersion 35
 //buildToolsVersion "33.0.3"
     defaultConfig {
         applicationId "com.baidu.mapclient.liteapp"
         minSdkVersion 21
-        targetSdkVersion 31
-        versionCode 16
-        versionName "1.0.16"
+        targetSdkVersion 35
+        versionCode 17
+        versionName "1.0.17"
 
         multiDexEnabled true
 
@@ -42,6 +42,7 @@ compileSdkVersion 31
         sourceCompatibility = 1.8
         targetCompatibility = 1.8
     }
+    namespace 'com.baidu.mapclient.liteapp'
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
             def appName = "SiFli-PreviewNav" // 替换为你的应用名称
