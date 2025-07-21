@@ -18,7 +18,7 @@ compileSdkVersion 35
         minSdkVersion 21
         targetSdkVersion 35
         versionCode 17
-        versionName "1.0.17"
+        versionName "1.0.19"
 
         multiDexEnabled true
 
@@ -78,5 +78,6 @@ dependencies {
     implementation (name: 'sifliotasdk-release', ext:'aar')
     implementation("com.madgag.spongycastle:core:1.58.0.0")
     implementation 'com.elvishew:xlog:1.11.1'
+    implementation 'com.github.naman14:TAndroidLame:1.1'
 
 }

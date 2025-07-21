@@ -11,8 +11,10 @@ import android.util.Log;
 import com.baidu.mapapi.CoordType;
 import com.baidu.mapapi.SDKInitializer;
 import com.baidu.mapclient.liteapp.log.SFLogReceiver;
+import com.baidu.mapclient.liteapp.tts.TTSHolder;
 import com.baidu.navisdk.adapter.BaiduNaviManagerFactory;
 import com.baidu.navisdk.adapter.IBNLicenseListener;
+import com.baidu.navisdk.adapter.IBNTTSManager;
 import com.baidu.navisdk.adapter.IBaiduNaviManager;
 import com.baidu.navisdk.adapter.struct.BNTTsInitConfig;
 import com.baidu.navisdk.adapter.struct.BNaviInitConfig;
@@ -24,6 +26,7 @@ import com.elvishew.xlog.printer.Printer;
 import com.elvishew.xlog.printer.file.FilePrinter;
 import com.elvishew.xlog.printer.file.backup.NeverBackupStrategy;
 import com.elvishew.xlog.printer.file.naming.DateFileNameGenerator;
+import com.baidu.mapclient.liteapp.tts.TTSHolder;
 
 import java.io.File;
 
@@ -85,28 +88,40 @@ public class ONApplication extends Application {
 
     private void initTTS() {
         // 使用内置TTS
-        BNTTsInitConfig config = new BNTTsInitConfig.Builder()
-                .context(getApplicationContext())
-                .appId(BNDemoUtils.getTTSAppID())
-                .appKey(BNDemoUtils.getTTSAppKey())
-                .secretKey(BNDemoUtils.getTTSsecretKey())
-                .authSn(BNDemoUtils.getAuth())
-                .build();
-        BaiduNaviManagerFactory.getTTSManager().initTTS(config);
+//        BNTTsInitConfig config = new BNTTsInitConfig.Builder()
+//                .context(getApplicationContext())
+//                .appId(BNDemoUtils.getTTSAppID())
+//                .appKey(BNDemoUtils.getTTSAppKey())
+//                .secretKey(BNDemoUtils.getTTSsecretKey())
+//                .authSn(BNDemoUtils.getAuth())
+//                .build();
+//        BaiduNaviManagerFactory.getTTSManager().initTTS(config);
 
+        TTSHolder.getInstance().init(this);
         // 使用外置TTS播报，与上面的内置TTS播报接口二选一，不可同时存在
-//        BaiduNaviManagerFactory.getTTSManager().initTTS(new IBNTTSManager.IBNOuterTTSPlayerCallback() {
-//            @Override
-//            public int playTTSText(String speech, int bPreempt, String speechId) {
-//                Log.e(TAG, speech);
-//                return 0;
-//            }
-//
-//            @Override
-//            public int getTTSState() {
-//                return 0;
-//            }
-//        });
+        BaiduNaviManagerFactory.getTTSManager().initTTS(new IBNTTSManager.IBNOuterTTSPlayerCallback() {
+
+
+            @Override
+            public int playTTSText(String speech, String pStrTag, int bPreempt, String speechId) {
+                TTSHolder.getInstance().handleNaviTTSText(speech);
+                return 1;
+            }
+
+            @Override
+            public int getTTSState() {
+                if(TTSHolder.getInstance().isIdle()){
+                    return IBNTTSManager.IBNOuterTTSPlayerCallback.PLAYER_STATE_IDLE;
+                }else{
+                    return IBNTTSManager.IBNOuterTTSPlayerCallback.PLAYER_STATE_PLAYING;
+                }
+            }
+
+            @Override
+            public String getCurTTSSpeech() {
+                return "";
+            }
+        });
     }
 
     /**

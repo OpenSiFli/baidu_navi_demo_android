@@ -44,6 +44,7 @@ import com.baidu.mapclient.liteapp.R;
 import com.baidu.mapclient.liteapp.activity.BNDemoLightNaviActivity;
 import com.baidu.mapclient.liteapp.listener.BNDemoNaviListener;
 import com.baidu.mapclient.liteapp.service.MinimapService;
+import com.baidu.mapclient.liteapp.tts.TTSHolder;
 import com.baidu.navisdk.adapter.BaiduNaviManagerFactory;
 import com.baidu.navisdk.adapter.IBNMiniMapViewManager;
 import com.baidu.navisdk.adapter.IBNOuterSettingParams;
@@ -1095,12 +1096,18 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
             SFLog.e(TAG,"sendSingleImage when videoManager is busy");
             return;
         }
-        this.miniMapViewManager.snapshotScope(new SnapshotReadyCallback() {
-            @Override
-            public void onSnapshotReady(Bitmap bitmap) {
-                onSnapReady(bitmap);
-            }
-        },true);
+        byte[] mp3Data = TTSHolder.getInstance().getMp3Data();
+        if(mp3Data != null){
+            SFLog.i(TAG,"sendSingleImage preview audio data %d",mp3Data.length);
+        }else{
+            this.miniMapViewManager.snapshotScope(new SnapshotReadyCallback() {
+                @Override
+                public void onSnapshotReady(Bitmap bitmap) {
+                    onSnapReady(bitmap);
+                }
+            },true);
+        }
+
 
     }
 
