@@ -31,6 +31,8 @@ public class TTSHolder implements TTSManager.TTSListener,MP3Encoder.EncodeListen
     private long lastAudioDuration;
     private int ttsState;
     private SFPlayer player;
+    private File currentMp3File;
+    private File currentWavFile;
 
     public void init(Context context){
         this.outDir = new File(getDeviceTTSPath(context));
@@ -89,11 +91,11 @@ public class TTSHolder implements TTSManager.TTSListener,MP3Encoder.EncodeListen
     public void handleNaviTTSText(String text){
         SFLog.i(TAG,"handleNaviTTSText playOnPhone=%b",this.playOnPhone);
         setTtsState(TTSHolderState.TTS_SPEAKING);
+        this.makeAudioPath();
         if(this.playOnPhone){
-
             this.manager.speak(text);
         }else{
-            this.manager.generateAudio(text);
+            this.manager.generateAudio(text,this.currentWavFile);
         }
     }
 
@@ -101,9 +103,9 @@ public class TTSHolder implements TTSManager.TTSListener,MP3Encoder.EncodeListen
     @Override
     public void onMp3Success(File mp3File) {
         SFLog.i(TAG,"onMp3Success");
-//        this.mp3Data = FileUtil.getFileData(mp3File.getPath());
-//        if(mp3Data != null) SFLog.i(TAG,"onMp3Success file size %d",this.mp3Data.length);
-        this.player.play(mp3File);
+        this.mp3Data = FileUtil.getFileData(mp3File.getPath());
+        if(mp3Data != null) SFLog.i(TAG,"onMp3Success file size %d,duration %.1fs",this.mp3Data.length,this.lastAudioDuration /1000.0);
+//        this.player.play(mp3File);
         setTtsState(TTSHolderState.TTS_DONE);
     }
 
@@ -124,8 +126,8 @@ public class TTSHolder implements TTSManager.TTSListener,MP3Encoder.EncodeListen
     public void onTTSAudioGenerated(File audioFile) {
         SFLog.i(TAG,"onTTSAudioGenerated %s",audioFile);
         setTtsState(TTSHolderState.TTS_MP3_ENCODING);
-        String mp3Path = makeMp3Path();
-        File mp3File = new File(mp3Path);
+//        String mp3Path = makeMp3Path();
+//        File mp3File = new File(mp3Path);
         try{
             this.lastAudioDuration = this.getAudioDuration(audioFile);
             SFLog.i(TAG,"lastAudioDuration =%d",this.lastAudioDuration);
@@ -133,7 +135,7 @@ public class TTSHolder implements TTSManager.TTSListener,MP3Encoder.EncodeListen
             ex.printStackTrace();
         }
 //        this.player.play(audioFile);
-        this.mp3Encoder.encodeToMp3(audioFile,mp3File,this);
+        this.mp3Encoder.encodeToMp3(audioFile,this.currentMp3File,this);
     }
 
     @Override
@@ -156,14 +158,18 @@ public class TTSHolder implements TTSManager.TTSListener,MP3Encoder.EncodeListen
         return root;
     }
 
-    private String makeMp3Path() {
+    private void makeAudioPath() {
+        this.currentMp3File = null;
+        this.currentWavFile = null;
         if (this.outDir != null) {
             // 使用时间戳作为文件名
             String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
-            String fileName = "TTS_" + timeStamp + ".mp3";
-            return new File(outDir, fileName).getAbsolutePath();
+            String mp3FileName = "TTS_" + timeStamp + ".mp3";
+            String wavFileName = "TTS_" + timeStamp + ".wav";
+            this.currentMp3File = new File(outDir, mp3FileName);
+            this.currentWavFile = new File(outDir, wavFileName);
         }
-        return null;
+
     }
 
     private long getTimeStamp() {

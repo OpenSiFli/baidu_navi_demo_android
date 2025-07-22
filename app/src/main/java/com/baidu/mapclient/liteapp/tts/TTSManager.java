@@ -51,10 +51,10 @@ public class TTSManager implements TextToSpeech.OnInitListener {
         }
     }
 
-    public void generateAudio(String text) {
+    public void generateAudio(String text,File outputFile) {
         SFLog.i(TAG,"generateAudio %s",text);
         String utteranceId = UUID.randomUUID().toString();
-        File outputFile = new File(outputDir, utteranceId + ".wav");
+//        File outputFile = new File(outputDir, utteranceId + ".wav");
 
         textToSpeech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
             @Override public void onStart(String utteranceId) {}

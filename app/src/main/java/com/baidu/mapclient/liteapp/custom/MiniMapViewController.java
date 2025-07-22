@@ -1099,6 +1099,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         byte[] mp3Data = TTSHolder.getInstance().getMp3Data();
         if(mp3Data != null){
             SFLog.i(TAG,"sendSingleImage preview audio data %d",mp3Data.length);
+            this.videoManager.previewAudio(mp3Data);
         }else{
             this.miniMapViewManager.snapshotScope(new SnapshotReadyCallback() {
                 @Override

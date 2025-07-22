@@ -3,6 +3,7 @@ package com.baidu.mapclient.liteapp.tts;
 import com.naman14.androidlame.AndroidLame;
 import com.naman14.androidlame.LameBuilder;
 import com.naman14.androidlame.WaveReader;
+import com.sifli.siflicore.log.SFLog;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -15,10 +16,11 @@ import java.io.OutputStream;
 public class MP3Encoder {
     private static final String TAG = "MP3Encoder";
     private static final int BUFFER_SIZE = 8192;
-    private static final int MP3_BUFFER_SIZE = 7200;
+    private static final int MP3_BUFFER_SIZE = 8192;
 
     private static final int TARGET_SAMPLE_RATE = 16000;
-    private static final int TARGET_BITRATE = 24;
+    private static final int TARGET_BITRATE = 16;
+    private static final int RIFF_HEADER_SIZE = 12; // "RIFF" + size + "WAVE"
 
     public interface EncodeListener {
         void onMp3Success(File mp3File);
@@ -26,82 +28,52 @@ public class MP3Encoder {
         void onMp3Error(String error);
     }
 
+    // 保留原有import和接口定义...
     public void encodeToMp3(File inputFile, File outputFile, EncodeListener listener) {
         new Thread(() -> {
             AndroidLame androidLame = null;
             try {
-                // 1. 读取WAV文件头信息
                 WaveReader waveReader = new WaveReader(inputFile);
                 waveReader.openWave();
+                int dataOffset = getDataOffset(inputFile);
+                long dataSize = waveReader.getDataSize();
 
-                // 2. 初始化LAME编码器
                 androidLame = new LameBuilder()
                         .setInSampleRate(waveReader.getSampleRate())
                         .setOutSampleRate(waveReader.getSampleRate())
                         .setOutChannels(1)
                         .setMode(LameBuilder.Mode.MONO)
                         .setVbrMode(LameBuilder.VbrMode.VBR_ABR)
-                        .setVbrQuality(TARGET_BITRATE)
+                        .setAbrMeanBitrate(TARGET_BITRATE)
+                        .setVbrQuality(4)
                         .setQuality(7) // 对应iOS的quality=7
                         .build();
-
-                // 3. 准备文件流
-                long totalBytes = inputFile.length();
-                long processedBytes = 0;
 
                 try (InputStream inputStream = new BufferedInputStream(new FileInputStream(inputFile));
                      OutputStream outputStream = new FileOutputStream(outputFile)) {
 
-                    // 4. 跳过WAV文件头(44字节)
-                    byte[] header = new byte[44];
-                    inputStream.read(header);
-                    processedBytes += 44;
-
-                    // 5. 准备缓冲区
+                    inputStream.skip(dataOffset);
                     short[] pcmBuffer = new short[BUFFER_SIZE];
                     byte[] mp3Buffer = new byte[MP3_BUFFER_SIZE];
+                    long remainingBytes = dataSize;
 
-                    // 6. 编码循环
                     int bytesRead;
-                    while ((bytesRead = readShorts(inputStream, pcmBuffer)) > 0) {
-                        processedBytes += bytesRead * 2;
-
-                        // 编码PCM数据
-                        int encodedSize = androidLame.encode(
-                                pcmBuffer, pcmBuffer,
-                                bytesRead / 2, mp3Buffer
-                        );
-
-                        if (encodedSize > 0) {
-                            outputStream.write(mp3Buffer, 0, encodedSize);
-                        }
-
-                        // 更新进度(0-100)
-                        int progress = (int) ((processedBytes * 100) / totalBytes);
-                        if (listener != null) {
-                            listener.onMp3Progress(Math.min(progress, 100));
-                        }
+                    while (remainingBytes > 0 && (bytesRead = readShorts(inputStream, pcmBuffer)) > 0) {
+                        int samplesToEncode = Math.min(bytesRead, (int)(remainingBytes / 2));
+                        int encodedSize = androidLame.encode(pcmBuffer, pcmBuffer, samplesToEncode, mp3Buffer);
+                        if (encodedSize > 0) outputStream.write(mp3Buffer, 0, encodedSize);
+                        remainingBytes -= samplesToEncode * 2;
+                        // 进度更新逻辑...
                     }
 
-                    // 7. 刷新编码缓冲区
                     int flushedSize = androidLame.flush(mp3Buffer);
-                    if (flushedSize > 0) {
-                        outputStream.write(mp3Buffer, 0, flushedSize);
-                    }
-
-                    // 8. 完成编码
-                    if (listener != null) {
-                        listener.onMp3Success(outputFile);
-                    }
+                    if (flushedSize > 0) outputStream.write(mp3Buffer, 0, flushedSize);
+                    listener.onMp3Success(outputFile);
                 }
             } catch (Exception e) {
-                if (listener != null) {
-                    listener.onMp3Error("编码失败: " + e.getMessage());
-                }
+                listener.onMp3Error(e.getMessage());
             } finally {
-                if (androidLame != null) {
-                    androidLame.close();
-                }
+                if (androidLame != null) androidLame.close();
             }
         }).start();
     }
@@ -118,5 +90,30 @@ public class MP3Encoder {
                     (byteBuffer[i * 2 + 1] << 8));
         }
         return bytesRead / 2;
+    }
+
+    public static int getDataOffset(File waveFile) throws IOException {
+        try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(waveFile))) {
+            // 跳过RIFF头
+            inputStream.skip(RIFF_HEADER_SIZE);
+
+            // 读取fmt块头
+            byte[] fmtChunk = new byte[8];
+            inputStream.read(fmtChunk);
+
+            // 验证fmt标记
+            if (!new String(fmtChunk, 0, 4).equals("fmt ")) {
+                throw new IOException("Invalid WAV fmt chunk");
+            }
+
+            // 计算fmt块大小
+            int fmtSize = (fmtChunk[4] & 0xFF) |
+                    (fmtChunk[5] << 8) |
+                    (fmtChunk[6] << 16) |
+                    (fmtChunk[7] << 24);
+
+            // 计算总偏移量：RIFF头 + fmt块头 + fmt块内容 + data块头
+            return RIFF_HEADER_SIZE + 8 + fmtSize + 8;
+        }
     }
 }
