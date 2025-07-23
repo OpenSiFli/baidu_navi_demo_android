@@ -109,6 +109,7 @@ public class TTSHolder implements TTSManager.TTSListener,MP3Encoder.EncodeListen
         if(mp3Data != null) SFLog.i(TAG,"onMp3Success file size %d,duration %.1fs",this.mp3Data.length,this.lastAudioDuration /1000.0);
 //        this.player.play(mp3File);
         setTtsState(TTSHolderState.TTS_DONE);
+        this.clearFile();
     }
 
     @Override
@@ -189,6 +190,23 @@ public class TTSHolder implements TTSManager.TTSListener,MP3Encoder.EncodeListen
             return -1; // 获取失败返回-1
         } finally {
             retriever.release();
+        }
+    }
+
+    private void clearFile(){
+        try{
+            if(this.currentWavFile != null && this.currentWavFile.exists()){
+                this.currentWavFile.delete();
+                SFLog.i(TAG,"wave cleared");
+            }
+
+            if(this.currentMp3File != null && this.currentMp3File.exists()){
+                this.currentMp3File.delete();
+                SFLog.i(TAG,"mp3 cleared");
+            }
+
+        }catch (Exception ex){
+            ex.printStackTrace();
         }
     }
 
