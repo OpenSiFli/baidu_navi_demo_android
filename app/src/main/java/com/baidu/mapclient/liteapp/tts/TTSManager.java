@@ -40,13 +40,18 @@ public class TTSManager implements TextToSpeech.OnInitListener {
 
     @Override
     public void onInit(int status) {
+        SFLog.i(TAG,"onInit status = %d",status);
         if (status == TextToSpeech.SUCCESS) {
             int result = textToSpeech.setLanguage(Locale.CHINA);
             if (result == TextToSpeech.LANG_MISSING_DATA ||
                     result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                SFLog.i(TAG,"Language not supported");
                 notifyError("Language not supported");
+            }else{
+                SFLog.i(TAG,"TTS initialization success");
             }
         } else {
+
             notifyError("TTS initialization failed");
         }
     }

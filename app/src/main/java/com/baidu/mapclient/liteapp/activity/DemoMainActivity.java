@@ -175,7 +175,14 @@ public class DemoMainActivity extends Activity {
                 BaiduNaviManagerFactory.getBaiduNaviManager().startLocationMonitor();
             }
         };
-        registerReceiver(mReceiver, filter);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            // Android 12+ 必须指定导出标志
+            registerReceiver(mReceiver, filter, RECEIVER_NOT_EXPORTED); // 或 RECEIVER_EXPORTED
+        } else {
+            // 旧版本兼容方式
+            registerReceiver(mReceiver, filter);
+        }
     }
 
     private void initPermission() {

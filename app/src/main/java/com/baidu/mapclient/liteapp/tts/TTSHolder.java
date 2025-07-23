@@ -85,7 +85,9 @@ public class TTSHolder implements TTSManager.TTSListener,MP3Encoder.EncodeListen
 
     private boolean isClientPlaying(){
         long timeNow = this.getTimeStamp();
-        return timeNow - this.lastFetchTime <= this.lastAudioDuration;
+        boolean result = timeNow - this.lastFetchTime <= this.lastAudioDuration;
+        SFLog.i(TAG,"isClientPlaying %b,timeNow=%d,lastFetch=%d,lastDuration=%d",result,timeNow,lastFetchTime,lastAudioDuration);
+        return  result;
     }
 
     public void handleNaviTTSText(String text){
