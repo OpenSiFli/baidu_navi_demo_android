@@ -1158,7 +1158,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
 
     public   void stopPreview(){
         this.isPreview = false;
-        this.videoManager.endPreviewVideo();
+        this.videoManager.stop();
     }
 
     private void startBackgroundThread() {
