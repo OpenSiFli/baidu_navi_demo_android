@@ -53,7 +53,10 @@ import com.baidu.navisdk.adapter.struct.BNaviInfo;
 import com.baidu.navisdk.adapter.struct.GuidePanelMessage;
 import com.baidu.navisdk.adapter.IBNLicenseListener;
 import com.sifli.siflicore.error.SFError;
+import com.sifli.siflicore.error.SFErrorCode;
 import com.sifli.siflicore.log.SFLog;
+import com.sifli.siflicore.shell.SFBleShellStatus;
+import com.sifli.sifliotasdk.error.SFOTAErrorCode;
 import com.sifli.sifliotasdk.manager.ISFPreviewVideoManagerCallback;
 import com.sifli.sifliotasdk.manager.SFPreviewVideoConfiguration;
 import com.sifli.sifliotasdk.manager.SFPreviewVideoManager;
@@ -1198,11 +1201,15 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         this.bgButton.setText("开始预览");
         String msg = String.format("completeWithError:%s",sfError);
         toast(msg);
+        if(sfError != null && sfError.getCode() != SFErrorCode.SF_MANUAL_STOP){
+            SFLog.i(TAG,"completeWithError,stop videoManager");
+            this.videoManager.stop();
+        }
     }
 
     @Override
-    public void updateManagerState(SFPreviewVideoManager sfPreviewVideoManager, int i) {
-
+    public void updateManagerState(SFPreviewVideoManager sfPreviewVideoManager, int status) {
+        this.bgButton.setEnabled(status != SFBleShellStatus.SEARCH_AND_CONNECTING);
     }
 
     @Override

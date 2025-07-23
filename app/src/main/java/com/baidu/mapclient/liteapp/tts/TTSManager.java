@@ -70,6 +70,7 @@ public class TTSManager implements TextToSpeech.OnInitListener {
                 notifyError("TTS synthesis failed");
             }
         });
+        textToSpeech.setSpeechRate(0.8f);
         int result = textToSpeech.synthesizeToFile(text, null, outputFile, utteranceId);
         if (result != TextToSpeech.SUCCESS) {
             notifyError("Failed to generate audio");
@@ -98,7 +99,7 @@ public class TTSManager implements TextToSpeech.OnInitListener {
                 notifyError("TTS synthesis failed");
             }
         });
-
+        textToSpeech.setSpeechRate(0.8f);
         textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, params, utteranceId);
     }
 
