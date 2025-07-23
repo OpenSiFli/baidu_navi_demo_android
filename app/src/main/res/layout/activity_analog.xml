@@ -78,6 +78,7 @@
             android:visibility="visible"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+
             android:layout_above="@id/analog_start_hide_mini_btn"
             android:text="车机播报"
             android:layout_marginBottom="10dp"
