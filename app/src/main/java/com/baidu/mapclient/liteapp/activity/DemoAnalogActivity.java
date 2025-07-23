@@ -25,6 +25,7 @@ import com.baidu.mapclient.liteapp.BNDemoUtils;
 import com.baidu.mapclient.liteapp.R;
 import com.baidu.mapclient.liteapp.custom.MiniMapViewController;
 import com.baidu.mapclient.liteapp.listener.BNDemoNaviListener;
+import com.baidu.mapclient.liteapp.tts.TTSHolder;
 import com.baidu.navisdk.adapter.BNaviCommonParams;
 import com.baidu.navisdk.adapter.BaiduNaviManagerFactory;
 import com.baidu.navisdk.adapter.IBNRouteGuideManager;
@@ -61,6 +62,7 @@ public class DemoAnalogActivity extends FragmentActivity  {
     private boolean isRealNavi = false;
     private Button resumeBtn;
     private Button pauseBtn;
+    private Button voiceModeBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,6 +112,7 @@ public class DemoAnalogActivity extends FragmentActivity  {
         this.macEt = findViewById(R.id.analog_mac_et);
         this.resumeBtn = findViewById(R.id.resume);
         this.pauseBtn = findViewById(R.id.pause);
+        this.voiceModeBtn = findViewById(R.id.analog_start_voice_mode_btn);
         if(this.isRealNavi){
             this.resumeBtn.setVisibility(View.INVISIBLE);
             this.pauseBtn.setVisibility(View.INVISIBLE);
@@ -267,6 +270,12 @@ public class DemoAnalogActivity extends FragmentActivity  {
             initMiniMapView();
         }else if (R.id.analog_start_hide_mini_btn == view.getId()){
             this.miniMapViewController.showOrHide();
+        }else if(R.id.analog_start_voice_mode_btn == view.getId()){
+            boolean playOnPhone = TTSHolder.getInstance().isPlayOnPhone();
+            playOnPhone = !playOnPhone;
+            TTSHolder.getInstance().setPlayOnPhone(playOnPhone);
+            String text = playOnPhone ? "手机播报" : "车机播报";
+            this.voiceModeBtn.setText(text);
         }
     }
 
