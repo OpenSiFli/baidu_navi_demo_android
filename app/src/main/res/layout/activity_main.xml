@@ -33,6 +33,7 @@
             android:layout_height="wrap_content"
             android:text="摩托车导航" />
         <RelativeLayout
+            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <Button
@@ -61,6 +62,7 @@
             android:text="模拟导航" />
 
         <LinearLayout
+            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <EditText
@@ -87,12 +89,14 @@
         </LinearLayout>
 
         <Button
+            android:visibility="gone"
             android:id="@+id/externalBtn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="传入外部GPS数据" />
 
         <Button
+            android:visibility="gone"
             android:id="@+id/cruiserBtn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -103,23 +107,27 @@
             android:layout_height="wrap_content"
             android:text="轻导航" />
         <Button
+            android:visibility="gone"
             android:id="@+id/gotoSettingsBtn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:text="导航设置" />
         <Button
+            android:visibility="gone"
             android:id="@+id/selectNodeBtn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="算路节点设置" />
         <Button
+            android:visibility="gone"
             android:id="@+id/addpoint"
             android:background="@drawable/bnav_setting_btn_bg_selector"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="带途径点算路" />
         <Button
+            android:visibility="gone"
             android:id="@+id/navi_setting_page"
             android:background="@drawable/bnav_setting_btn_bg_selector"
             android:layout_width="match_parent"
@@ -131,6 +139,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="搜索蓝牙" />
+        <Button
+            android:id="@+id/navi_log_btn"
+            android:background="@drawable/bnav_setting_btn_bg_selector"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="日志管理" />
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/navi_setting_page_item_recycle"
             android:layout_width="wrap_content"

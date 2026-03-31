@@ -78,6 +78,7 @@ public class DemoMainActivity extends Activity {
     private Button mGotoSettingsBtn = null;
     private Button limitChange = null;
     private Button searchDeviceBtn;
+    private Button logBtn;
     private String targetMac;
 
     private BroadcastReceiver mReceiver;
@@ -214,6 +215,7 @@ public class DemoMainActivity extends Activity {
         mSelectNodeBtn = findViewById(R.id.selectNodeBtn);
         mGotoSettingsBtn.setText("导航设置" + getVersionName(this));
         searchDeviceBtn = findViewById(R.id.navi_search_device_btn);
+        logBtn = findViewById(R.id.navi_log_btn);
         RecyclerView recyclerView = findViewById(R.id.navi_setting_page_item_recycle);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         List<IBNOuterSettingParams.BNavSettingItem> list = new ArrayList<>();
@@ -462,6 +464,13 @@ public class DemoMainActivity extends Activity {
                 startSearchDevice();
             }
         });
+
+        logBtn.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onLogBtnTouch();
+            }
+        });
     }
     public static HashMap<IBNOuterSettingParams.BNavSettingItem, Boolean> mSdkFunc = new HashMap<>();
     private void initNaviViewFunc() {
@@ -556,6 +565,10 @@ public class DemoMainActivity extends Activity {
         Intent intent = new Intent(DemoMainActivity.this, DeviceScanActivity.class);
 
         startActivityForResult(intent,REQUEST_CODE_SEARCH_DEVICE);
+    }
+
+    private  void onLogBtnTouch(){
+        startActivity(new Intent(this, LogsActivity.class));
     }
 
    @Override
