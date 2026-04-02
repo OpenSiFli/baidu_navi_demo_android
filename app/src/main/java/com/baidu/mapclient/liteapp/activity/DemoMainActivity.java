@@ -23,6 +23,8 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,6 +37,7 @@ import com.baidu.mapclient.liteapp.BNDemoFactory;
 import com.baidu.mapclient.liteapp.BNDemoUtils;
 import com.baidu.mapclient.liteapp.ForegroundService;
 import com.baidu.mapclient.liteapp.R;
+import com.baidu.mapclient.liteapp.config.SFNaviOption;
 import com.baidu.mapclient.liteapp.devicescan.DeviceScanActivity;
 import com.baidu.navisdk.adapter.BNRoutePlanNode;
 import com.baidu.navisdk.adapter.BNaviCommonParams;
@@ -44,6 +47,7 @@ import com.baidu.navisdk.adapter.IBNOuterSettingManager;
 import com.baidu.navisdk.adapter.IBNOuterSettingParams;
 import com.baidu.navisdk.adapter.IBNRoutePlanManager;
 import com.baidu.navisdk.adapter.struct.BNRoutePlanInfos;
+import com.sifli.siflicore.log.SFLog;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,6 +82,7 @@ public class DemoMainActivity extends Activity {
     private Button mGotoSettingsBtn = null;
     private Button limitChange = null;
     private Button searchDeviceBtn;
+    private CheckBox useSocketCb;
     private Button logBtn;
     private String targetMac;
 
@@ -216,6 +221,7 @@ public class DemoMainActivity extends Activity {
         mGotoSettingsBtn.setText("导航设置" + getVersionName(this));
         searchDeviceBtn = findViewById(R.id.navi_search_device_btn);
         logBtn = findViewById(R.id.navi_log_btn);
+        useSocketCb = findViewById(R.id.main_use_socket_cb);
         RecyclerView recyclerView = findViewById(R.id.navi_setting_page_item_recycle);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         List<IBNOuterSettingParams.BNavSettingItem> list = new ArrayList<>();
@@ -469,6 +475,13 @@ public class DemoMainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 onLogBtnTouch();
+            }
+        });
+        useSocketCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                SFLog.i("DEMO MAIN","use socket =%b",isChecked);
+                SFNaviOption.getInstance().setUseSocket(isChecked);
             }
         });
     }

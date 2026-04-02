@@ -42,9 +42,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.baidu.mapclient.liteapp.BNDemoUtils;
 import com.baidu.mapclient.liteapp.R;
 import com.baidu.mapclient.liteapp.activity.BNDemoLightNaviActivity;
+import com.baidu.mapclient.liteapp.config.SFNaviOption;
 import com.baidu.mapclient.liteapp.listener.BNDemoNaviListener;
 import com.baidu.mapclient.liteapp.service.MinimapService;
 import com.baidu.mapclient.liteapp.tts.TTSHolder;
+import com.baidu.mapclient.liteapp.util.speedview.SpeedView;
 import com.baidu.navisdk.adapter.BaiduNaviManagerFactory;
 import com.baidu.navisdk.adapter.IBNMiniMapViewManager;
 import com.baidu.navisdk.adapter.IBNOuterSettingParams;
@@ -109,6 +111,9 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     private Handler mBackgroundHandler;
     private HandlerThread mBackgroundThread;
     private String targetMac;
+    private int transMode;
+    private SpeedView speedView;
+    private float fps;
 
 
     public MiniMapViewController() {
@@ -149,11 +154,17 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     }
 
     private void initPreviewNav(){
+        this.speedView = new SpeedView();
         this.startBackgroundThread();
         this.videoManager = SFPreviewVideoManager.getInstance();
         this.videoManager.setCallback(this);
         Activity a = (Activity)mContext;
-        this.videoManager.init(a.getApplication(), SFTransmissionMode.TRANSMISSION_MODE_SPP);
+        this.transMode = SFTransmissionMode.TRANSMISSION_MODE_SPP;
+        if(SFNaviOption.getInstance().isUseSocket()){
+            this.transMode = SFTransmissionMode.TRANSMISSION_MODE_SOCKET;
+        }
+        SFLog.i(TAG,"initPreviewNav Trans Mode = %d",this.transMode);
+        this.videoManager.init(a.getApplication(), this.transMode);
     }
 
     private void init(ViewGroup rootView, Context context) {
@@ -180,7 +191,8 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
                 isPreview = !isPreview;
 
                 if (isPreview) {
-                    startPreview();
+//                    startPreview();
+                    onStartPreviewBtnTouch();
                     bgButton.setText("停止预览");
                 } else {
                    stopPreview();
@@ -1136,6 +1148,15 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
 //        },50);
     }
 
+    private void onStartPreviewBtnTouch(){
+        SFLog.i(TAG,"onStartPreviewBtnTouch trans mode=%d",this.transMode);
+        this.speedView.clear();
+        if(this.transMode == SFTransmissionMode.TRANSMISSION_MODE_SOCKET){
+            this.videoManager.startTcpListen(2025);
+        }else{
+            this.startPreview();
+        }
+    }
     private void startPreview(){
         if(this.targetMac == null || this.targetMac.isEmpty()){
             toast("target mac is null or empty");
@@ -1210,11 +1231,17 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     @Override
     public void updateManagerState(SFPreviewVideoManager sfPreviewVideoManager, int status) {
         this.bgButton.setEnabled(status != SFBleShellStatus.SEARCH_AND_CONNECTING);
+        if(this.transMode == SFTransmissionMode.TRANSMISSION_MODE_SOCKET){
+            if(!this.videoManager.isBusy() && status == SFBleShellStatus.MODULE_WORKING){
+                this.startPreview();
+            }
+        }
     }
 
     @Override
     public void onFps(SFPreviewVideoManager sfPreviewVideoManager, float v) {
-        this.fpsTv.setText("" + v);
+        this.fps = v;
+
     }
 
     @Override
@@ -1236,6 +1263,9 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     @Override
     public void onSendImageCount(long imageCount, long sendBytes) {
         SFLog.i(TAG,"onSendImageCount %d,sendBytes %d",imageCount,sendBytes);
+        this.speedView.viewSpeedByCompleteBytes(sendBytes);
+        String fpsText = String.format("%.1f",this.fps);
+        this.fpsTv.setText(fpsText + "/" + this.speedView.getCurrentSpeedText());
 //        this.speedView.viewSpeedByCompleteBytes(sendBytes);
 //        this.speedTv.setText(this.speedView.getCurrentSpeedText());
     }
