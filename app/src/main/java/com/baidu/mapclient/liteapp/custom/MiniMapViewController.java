@@ -1233,6 +1233,12 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         SFLog.i(TAG,"onReadyToSendImage");
         this.sendSingleImage();
     }
+    @Override
+    public void onSendImageCount(long imageCount, long sendBytes) {
+        SFLog.i(TAG,"onSendImageCount %d,sendBytes %d",imageCount,sendBytes);
+//        this.speedView.viewSpeedByCompleteBytes(sendBytes);
+//        this.speedTv.setText(this.speedView.getCurrentSpeedText());
+    }
 
 
     private void toast(String msg){
