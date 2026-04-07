@@ -1153,6 +1153,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         this.speedView.clear();
         if(this.transMode == SFTransmissionMode.TRANSMISSION_MODE_SOCKET){
             this.videoManager.startTcpListen(2025);
+            this.videoManager.setSocketMtu(16);
         }else{
             this.startPreview();
         }
