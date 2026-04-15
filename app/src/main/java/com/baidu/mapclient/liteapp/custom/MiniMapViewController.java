@@ -114,6 +114,10 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     private int transMode;
     private SpeedView speedView;
     private float fps;
+    //上次截取的快照，保鲜期80毫秒
+    private Bitmap lastSnapMap;
+    private long lastSnapTimestamp;
+    private final int KEEP_SNAP_TIME = 80;
 
 
     public MiniMapViewController() {
@@ -1114,20 +1118,33 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         byte[] mp3Data = TTSHolder.getInstance().getMp3Data();
         if(mp3Data != null){
             SFLog.i(TAG,"sendSingleImage preview audio data %d",mp3Data.length);
-            this.videoManager.previewAudio(mp3Data);
+            long ts = System.currentTimeMillis();
+            this.videoManager.previewAudio(mp3Data,ts);
         }else{
-            this.miniMapViewManager.snapshotScope(new SnapshotReadyCallback() {
-                @Override
-                public void onSnapshotReady(Bitmap bitmap) {
-                    onSnapReady(bitmap);
-                }
-            },true);
+
+            long now = System.currentTimeMillis();
+            if(this.lastSnapMap == null || now - lastSnapTimestamp > KEEP_SNAP_TIME){
+                SFLog.i(TAG,"sendSingleImage request snapshotScope");
+                this.miniMapViewManager.snapshotScope(new SnapshotReadyCallback() {
+                    @Override
+                    public void onSnapshotReady(Bitmap bitmap) {
+                        onSnapReady(bitmap);
+                    }
+                },true);
+            }else{
+                SFLog.i(TAG,"sendSingleImage use lastSnapMap");
+                onSnapReady(this.lastSnapMap);
+            }
+
         }
 
 
     }
 
     private  void onSnapReady(Bitmap map){
+        SFLog.i(TAG,"onSnapReady size %d * %d",map.getWidth(),map.getHeight());
+        this.lastSnapMap = map;
+        this.lastSnapTimestamp = System.currentTimeMillis();
         Bitmap navInfo = makeViewBitmap(this.topGuideInfoLl);
         Bitmap bottomInfo = makeViewBitmap(this.bottomGuideInfoRl);
         Bitmap lineListMap = null;
@@ -1139,7 +1156,9 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
             enlargeMap = makeViewBitmap(enlargeView);
         }
         Bitmap bitmap = NavBitmapFactory.mergeBitmap(map,navInfo,bottomInfo,enlargeMap,lineListMap);
-        if(bitmap != null)this.videoManager.previewVideoSample(bitmap);
+        SFLog.i(TAG,"previewVideoSample...");
+        long ts = System.currentTimeMillis();
+        if(bitmap != null)this.videoManager.previewVideoSample(bitmap,ts);
 //        this.mBackgroundHandler.postDelayed(new Runnable() {
 //            @Override
 //            public void run() {
