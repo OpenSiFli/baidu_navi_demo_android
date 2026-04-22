@@ -15,9 +15,9 @@ compileSdkVersion 35
 //buildToolsVersion "33.0.3"
     defaultConfig {
         applicationId "com.baidu.mapclient.liteapp"
-        minSdkVersion 21
+        minSdkVersion 24
         targetSdkVersion 33
-        versionCode 31
+        versionCode 32
         versionName "1.1.2"
 
         multiDexEnabled true
@@ -76,6 +76,7 @@ dependencies {
     implementation (name: 'NaviTts', ext:'aar')
     implementation (name: 'siflicore-release', ext:'aar')
     implementation (name: 'sifliotasdk-release', ext:'aar')
+    implementation (name: 'sifliimagelib-release', ext:'aar')
     implementation("com.madgag.spongycastle:core:1.58.0.0")
     implementation 'com.elvishew:xlog:1.11.1'
     implementation 'com.github.naman14:TAndroidLame:1.1'

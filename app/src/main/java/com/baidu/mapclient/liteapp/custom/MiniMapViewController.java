@@ -17,7 +17,6 @@ import android.os.Process;
 import android.provider.Settings;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
-import android.text.TextUtils;
 import android.text.style.ImageSpan;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.TypefaceSpan;
@@ -45,6 +44,11 @@ import com.baidu.mapclient.liteapp.activity.BNDemoLightNaviActivity;
 import com.baidu.mapclient.liteapp.config.SFNaviOption;
 import com.baidu.mapclient.liteapp.listener.BNDemoNaviListener;
 import com.baidu.mapclient.liteapp.service.MinimapService;
+import com.baidu.mapclient.liteapp.sifliui.NavBitmapFactory;
+import com.baidu.mapclient.liteapp.sifliui.SFEnlargeMapInfo;
+import com.baidu.mapclient.liteapp.sifliui.SFLineInfo;
+import com.baidu.mapclient.liteapp.sifliui.SFNavInfo;
+import com.baidu.mapclient.liteapp.sifliui.SFTopRightInfo;
 import com.baidu.mapclient.liteapp.tts.TTSHolder;
 import com.baidu.mapclient.liteapp.util.speedview.SpeedView;
 import com.baidu.navisdk.adapter.BaiduNaviManagerFactory;
@@ -53,12 +57,12 @@ import com.baidu.navisdk.adapter.IBNOuterSettingParams;
 import com.baidu.navisdk.adapter.struct.BNavLineItem;
 import com.baidu.navisdk.adapter.struct.BNaviInfo;
 import com.baidu.navisdk.adapter.struct.GuidePanelMessage;
-import com.baidu.navisdk.adapter.IBNLicenseListener;
 import com.sifli.siflicore.error.SFError;
 import com.sifli.siflicore.error.SFErrorCode;
+import com.sifli.siflicore.image.ISifliImageHelper;
 import com.sifli.siflicore.log.SFLog;
 import com.sifli.siflicore.shell.SFBleShellStatus;
-import com.sifli.sifliotasdk.error.SFOTAErrorCode;
+import com.sifli.sifliimagelib.helper.SifliImageHelper;
 import com.sifli.sifliotasdk.manager.ISFPreviewVideoManagerCallback;
 import com.sifli.sifliotasdk.manager.SFPreviewVideoConfiguration;
 import com.sifli.sifliotasdk.manager.SFPreviewVideoManager;
@@ -80,8 +84,8 @@ import java.util.TimerTask;
 public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewVideoManagerCallback {
 
     private  final  String TAG = "MiniMapViewController";
-    private final static int miniWidth = 1024;
-    private final static int miniHeight = 600;
+    private final static int miniWidth = 800;
+    private final static int miniHeight = 480;
     /**
      * 多实例底图
      */
@@ -119,9 +123,16 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     private long lastSnapTimestamp;
     private final int KEEP_SNAP_TIME = 80;
 
+    private final SFNavInfo navInfo;
+    private final SFTopRightInfo topRightInfo;
+    private final SFLineInfo lineInfo;
+    private final SFEnlargeMapInfo enlargeMapInfo;
 
     public MiniMapViewController() {
-
+        this.navInfo = new SFNavInfo((int)(miniWidth * 0.4),100,10);
+        this.topRightInfo = new SFTopRightInfo((int)(miniWidth * 0.4),100,10);
+        this.lineInfo = new SFLineInfo((int)(miniWidth * 0.4),60,10);
+        this.enlargeMapInfo = new SFEnlargeMapInfo();
     }
 
     @Override
@@ -168,7 +179,8 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
             this.transMode = SFTransmissionMode.TRANSMISSION_MODE_SOCKET;
         }
         SFLog.i(TAG,"initPreviewNav Trans Mode = %d",this.transMode);
-        this.videoManager.init(a.getApplication(), this.transMode);
+        ISifliImageHelper imageHelper = new SifliImageHelper();
+        this.videoManager.init(a.getApplication(), this.transMode,imageHelper);
     }
 
     private void init(ViewGroup rootView, Context context) {
@@ -405,8 +417,8 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     private void enlarge(){
         ViewGroup.LayoutParams layoutParams = mRootView.getLayoutParams();
         if (layoutParams.width == miniWidth) {
-            layoutParams.width = 1024;
-            layoutParams.height = 600;
+            layoutParams.width = 800;
+            layoutParams.height = 480;
             offset(0, -250);
             ((TextView) mRootView.findViewById(R.id.btn_enlarge)).setText("缩小");
         } else {
@@ -745,11 +757,18 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
                             @Override
                             public void run() {
                                 mLaneItems = laneItems;
+
                                 if (action == Action.HIDE) {
                                     lanelineList.setVisibility(View.GONE);
+                                    lineInfo.setVisible(false);
                                 } else {
                                     lanelineList.setVisibility(View.VISIBLE);
                                     laneLineAdapter.notifyDataSetChanged();
+                                    lineInfo.setVisible(true);
+                                    lineInfo.clear();
+                                    for (BNavLineItem item:mLaneItems) {
+                                        lineInfo.addLine(item.getDrawable());
+                                    }
                                 }
                             }
                         });
@@ -769,6 +788,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
                                     ((RelativeLayout) mRootView.findViewById(
                                             R.id.enlarge_map_layout)).removeAllViews();
                                     enlargeView = null;
+                                    enlargeMapInfo.setVisible(false);
                                 }
                             }
                         });
@@ -807,6 +827,10 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
                                     String distanceText = getDistanceText(naviInfo.getDistance());
                                     ((ImageView) mRootView.findViewById(R.id.guideinfo_icon)).setImageDrawable(d);
                                     ((TextView) mRootView.findViewById(R.id.guideinfo_txt)).setText(distanceText + "进入\n" + naviInfo.getRoadName());
+                                    navInfo.setTurnIcon(naviInfo.getTurnIcon());
+                                    navInfo.setDistanceText(distanceText + "进入");
+                                    navInfo.setRoadNameText(naviInfo.getRoadName());
+                                    navInfo.setVisible(true);
                                 } else {
                                     Toast.makeText(mContext, "诱导信息为空！！", Toast.LENGTH_SHORT).show();
                                 }
@@ -870,20 +894,25 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
             public void run() {
                 int time;
                 if (type == 1 && mRemainDists != null && mRemainDists.length > 0) {
-                    ((TextView) etaView.findViewById(R.id.remain_info)).setText(
-                            "途:" + getRemainDist(mRemainDists[0]) +
-                                    getFormatTime(mRemainTimes[0]) + mViaRemainLights + "红绿灯");
+                    String remainInfo = "途:" + getRemainDist(mRemainDists[0]) +
+                            getFormatTime(mRemainTimes[0]) + mViaRemainLights + "红绿灯";
+                    ((TextView) etaView.findViewById(R.id.remain_info)).setText(remainInfo);
                     time = mRemainTimes[0];
+                    topRightInfo.setRemainInfo(remainInfo);
                 } else {
-                    ((TextView) etaView.findViewById(R.id.remain_info)).setText(
-                            "终:" + getRemainDist(mRemainDistance) + getFormatTime(mRemainTime) + mRemainLights + "红绿灯");
+                    String remainInfo = "终:" + getRemainDist(mRemainDistance) + getFormatTime(mRemainTime) + mRemainLights + "红绿灯";
+                    ((TextView) etaView.findViewById(R.id.remain_info)).setText(remainInfo);
                     time = mRemainTime;
+                    topRightInfo.setRemainInfo(remainInfo);
                 }
                 Calendar calendar = Calendar.getInstance();
                 calendar.add(Calendar.SECOND, time);
                 Date newTime = calendar.getTime();
                 SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
-                ((TextView) etaView.findViewById(R.id.arrive_info)).setText("预计" + sdf.format(newTime) + "到达");
+                String arriveInfo = "预计" + sdf.format(newTime) + "到达";
+                ((TextView) etaView.findViewById(R.id.arrive_info)).setText(arriveInfo);
+                topRightInfo.setArriveInfo(arriveInfo);
+                topRightInfo.setVisible(true);
             }
         });
     }
@@ -974,6 +1003,9 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
 
 
         ((TextView) enlargeView.findViewById(R.id.enlarge_message)).setText(stringBuilder);
+        Bitmap enlargeMapBitmap = makeViewBitmap(enlargeView);
+        enlargeMapInfo.setEnlargeMap(enlargeMapBitmap);
+        enlargeMapInfo.setVisible(true);
     }
 
     private void removeNaviListener() {
@@ -1106,6 +1138,17 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
 //
 //    }
 
+    private void makeSnapMap(){
+        SFLog.i(TAG,"makeSnapMap");
+        this.miniMapViewManager.snapshotScope(new SnapshotReadyCallback() {
+            @Override
+            public void onSnapshotReady(Bitmap bitmap) {
+                lastSnapMap = bitmap;
+                lastSnapTimestamp = System.currentTimeMillis();
+            }
+        },true);
+
+    }
     private void  sendSingleImage(){
         if(!isPreview)return;
         if(this.videoManager == null)return;
@@ -1124,38 +1167,48 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
 
             long now = System.currentTimeMillis();
             if(this.lastSnapMap == null || now - lastSnapTimestamp > KEEP_SNAP_TIME){
-                SFLog.i(TAG,"sendSingleImage request snapshotScope");
-                this.miniMapViewManager.snapshotScope(new SnapshotReadyCallback() {
+                SFLog.i(TAG,"need make snap map...");
+                this.mainHandler.post(new Runnable() {
                     @Override
-                    public void onSnapshotReady(Bitmap bitmap) {
-                        onSnapReady(bitmap);
+                    public void run() {
+                        makeSnapMap();
                     }
-                },true);
+                });
+//                SFLog.i(TAG,"sendSingleImage request snapshotScope");
+//                this.miniMapViewManager.snapshotScope(new SnapshotReadyCallback() {
+//                    @Override
+//                    public void onSnapshotReady(Bitmap bitmap) {
+//                        onSnapReady(bitmap);
+//                    }
+//                },true);
             }else{
                 SFLog.i(TAG,"sendSingleImage use lastSnapMap");
+
+            }
+
+            if(this.lastSnapMap != null){
                 onSnapReady(this.lastSnapMap);
+            }else{
+                SFLog.e(TAG,"snap map is null");
             }
 
         }
-
-
     }
 
     private  void onSnapReady(Bitmap map){
         SFLog.i(TAG,"onSnapReady size %d * %d",map.getWidth(),map.getHeight());
-        this.lastSnapMap = map;
-        this.lastSnapTimestamp = System.currentTimeMillis();
-        Bitmap navInfo = makeViewBitmap(this.topGuideInfoLl);
-        Bitmap bottomInfo = makeViewBitmap(this.bottomGuideInfoRl);
-        Bitmap lineListMap = null;
-        if(lanelineList.getVisibility() == View.VISIBLE){
-            lineListMap = makeViewBitmap(this.lanelineList);
-        }
-        Bitmap enlargeMap = null;
-        if(enlargeView != null){
-            enlargeMap = makeViewBitmap(enlargeView);
-        }
-        Bitmap bitmap = NavBitmapFactory.mergeBitmap(map,navInfo,bottomInfo,enlargeMap,lineListMap);
+//        Bitmap navInfo = makeViewBitmap(this.topGuideInfoLl);
+//        Bitmap bottomInfo = makeViewBitmap(this.bottomGuideInfoRl);
+//        Bitmap lineListMap = null;
+//        if(lanelineList.getVisibility() == View.VISIBLE){
+//            lineListMap = makeViewBitmap(this.lanelineList);
+//        }
+//        Bitmap enlargeMap = null;
+//        if(enlargeView != null){
+//            enlargeMap = makeViewBitmap(enlargeView);
+//        }
+//        Bitmap bitmap = NavBitmapFactory.mergeBitmap(map,navInfo,bottomInfo,enlargeMap,lineListMap);
+        Bitmap bitmap = NavBitmapFactory.makeBitmap(map,navInfo,topRightInfo,enlargeMapInfo,lineInfo);
         SFLog.i(TAG,"previewVideoSample...");
         long ts = System.currentTimeMillis();
         if(bitmap != null)this.videoManager.previewVideoSample(bitmap,ts);
@@ -1185,14 +1238,18 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         int width = 800;
         int height = 480;
         int rotation = 0;
-        float quality = 0.5f;
+        float quality = 0.3f;
         SFPreviewVideoConfiguration config = new SFPreviewVideoConfiguration();
+        config.setPreviewType(SFPreviewVideoConfiguration.PREVIEW_TYPE_IMAGE);
+        config.setAspectSizeForNaviMap(false);
         config.setWatchScreenWidth(width);
         config.setWatchScreenHeight(height);
         config.setJpegQuality(quality);
         config.setMirroredHorizontally(false);
         config.setRotation(rotation);
+        config.setMaxFps(30);
 //        this.cycleImage();
+        this.makeSnapMap();
         this.videoManager.startPreviewVideo(config,targetMac);
 //        this.videoManager.startPreviewVideo(config,"BB:00:00:AB:00:19");
     }
