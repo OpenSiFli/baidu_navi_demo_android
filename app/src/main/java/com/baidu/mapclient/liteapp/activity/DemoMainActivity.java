@@ -26,6 +26,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -83,6 +84,11 @@ public class DemoMainActivity extends Activity {
     private Button limitChange = null;
     private Button searchDeviceBtn;
     private CheckBox useSocketCb;
+    private EditText jpegQualityEt;
+    private EditText maxFpsEt;
+    private RadioButton size800_480Rb;
+    private RadioButton size480_272Rb;
+    private TextView versionTv;
     private Button logBtn;
     private String targetMac;
 
@@ -222,6 +228,13 @@ public class DemoMainActivity extends Activity {
         searchDeviceBtn = findViewById(R.id.navi_search_device_btn);
         logBtn = findViewById(R.id.navi_log_btn);
         useSocketCb = findViewById(R.id.main_use_socket_cb);
+        jpegQualityEt = findViewById(R.id.main_jpeg_quality_et);
+        maxFpsEt = findViewById(R.id.main_max_fps_et);
+        size800_480Rb = findViewById(R.id.main_size_800_rb);
+        size480_272Rb = findViewById(R.id.main_size_480_rb);
+        versionTv = findViewById(R.id.main_version_tv);
+        versionTv.setText(getVersionName(this));
+
         RecyclerView recyclerView = findViewById(R.id.navi_setting_page_item_recycle);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         List<IBNOuterSettingParams.BNavSettingItem> list = new ArrayList<>();
@@ -383,6 +396,7 @@ public class DemoMainActivity extends Activity {
             mAnalogBtn.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    applySetting();
                     if (BaiduNaviManagerFactory.getBaiduNaviManager().isInited()) {
                         mPageType = BNDemoUtils.ANALOG;
                         Bundle bundle = new Bundle();
@@ -582,6 +596,37 @@ public class DemoMainActivity extends Activity {
 
     private  void onLogBtnTouch(){
         startActivity(new Intent(this, LogsActivity.class));
+    }
+
+    private void applySetting(){
+        SFLog.i("MAIN","applySetting");
+        SFNaviOption option = SFNaviOption.getInstance();
+        String maxFpsTxt = this.maxFpsEt.getText().toString();
+        String jpegQualityTxt = this.jpegQualityEt.getText().toString();
+        boolean isSize800 = this.size800_480Rb.isChecked();
+        boolean isSize480 = this.size480_272Rb.isChecked();
+        boolean useSocket = this.useSocketCb.isChecked();
+
+        int maxFps = 20;
+        float jpegQuality = 0.2f;
+        int width = 800;
+        int height = 480;
+        if(isSize480){
+            width = 480;
+            height = 272;
+        }
+        try{
+            maxFps = Integer.parseInt(maxFpsTxt);
+            jpegQuality = Float.parseFloat(jpegQualityTxt);
+        }catch (Exception e){
+            SFLog.e("MAIN","applySetting error %s",e);
+        }
+
+        option.setMaxFPS(maxFps);
+        option.setJpegQuality(jpegQuality);
+        option.setWidth(width);
+        option.setHeight(height);
+        option.setUseSocket(useSocket);
     }
 
    @Override

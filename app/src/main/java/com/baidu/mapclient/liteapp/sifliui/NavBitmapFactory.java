@@ -195,31 +195,37 @@ public class NavBitmapFactory {
     }
 
     private static void drawLineInfo(Canvas canvas, SFLineInfo lineInfo, int left, int top) {
-        int width = lineInfo.getWidth();
-        int height = lineInfo.getHeight();
-        int radius = lineInfo.getRadius();
+//        int width = lineInfo.getWidth();
+//        int height = lineInfo.getHeight();
+//        int radius = lineInfo.getRadius();
 
         // 绘制背景 (iOS UIColor(0,0.48,1,1) -> #007AFF)
-        Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        bgPaint.setColor(Color.parseColor("#007AFF"));
-        RectF bgRect = new RectF(left, top, left + width, top + height);
-        canvas.drawRoundRect(bgRect, radius, radius, bgPaint);
+//        Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+//        bgPaint.setColor(Color.parseColor("#007AFF"));
+//        RectF bgRect = new RectF(left, top, left + width, top + height);
+//        canvas.drawRoundRect(bgRect, radius, radius, bgPaint);
 
         int padding = 5;
-        int itemSize = 32;
-        int itemSpacing = 5;
+//        int itemSize = 32;
+//        int itemSpacing = 5;
         int currentX = left + padding;
 
-        for (Drawable drawable : lineInfo.getLineItems()) {
-            if (drawable == null) continue;
-            // 限制绘制区域不超出背景
-            if (currentX + itemSize > left + width - padding) break;
-
-            drawable.setBounds(currentX, top + (height - itemSize) / 2,
-                    currentX + itemSize, top + (height + itemSize) / 2);
-            drawable.draw(canvas);
-            currentX += itemSize + itemSpacing;
+        Bitmap lineBitmap = lineInfo.getCachedBitmap();
+        if(lineBitmap != null){
+            canvas.drawBitmap(lineBitmap,currentX,top,null);
         }
+
+
+//        for (Drawable drawable : lineInfo.getLineItems()) {
+//            if (drawable == null) continue;
+//            // 限制绘制区域不超出背景
+//            if (currentX + itemSize > left + width - padding) break;
+//
+//            drawable.setBounds(currentX, top + (height - itemSize) / 2,
+//                    currentX + itemSize, top + (height + itemSize) / 2);
+//            drawable.draw(canvas);
+//            currentX += itemSize + itemSpacing;
+//        }
     }
 
     private static void drawEnlargeMap(Canvas canvas, SFEnlargeMapInfo enlargeMapInfo, int left, int top) {

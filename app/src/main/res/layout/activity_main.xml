@@ -14,6 +14,13 @@
         android:paddingTop="@dimen/activity_vertical_margin"
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingBottom="@dimen/activity_vertical_margin">
+        <TextView
+            android:id="@+id/main_version_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="0dp"
+            android:text="Ver:1.0.0"
+            />
         <LinearLayout
             android:visibility="visible"
             android:orientation="horizontal"
@@ -29,7 +36,65 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="WIFI SOCKET"/>
+
         </LinearLayout>
+        <LinearLayout
+            android:visibility="visible"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Jpeg Quality"
+                />
+            <EditText
+                android:id="@+id/main_jpeg_quality_et"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="jpeg quality"
+                android:text="0.2"
+                />
+        </LinearLayout>
+
+        <LinearLayout
+            android:visibility="visible"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Max Fps"
+                />
+            <EditText
+                android:id="@+id/main_max_fps_et"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="max fps"
+                android:text="20"
+                />
+        </LinearLayout>
+        <RadioGroup
+            android:visibility="visible"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <RadioButton
+                android:id="@+id/main_size_800_rb"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="800 * 480"/>
+
+            <RadioButton
+                android:id="@+id/main_size_480_rb"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="480 * 272"/>
+
+        </RadioGroup>
         <Button
             android:id="@+id/naviBtn"
             android:layout_width="match_parent"

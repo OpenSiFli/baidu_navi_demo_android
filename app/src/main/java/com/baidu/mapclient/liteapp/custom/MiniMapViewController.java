@@ -84,8 +84,8 @@ import java.util.TimerTask;
 public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewVideoManagerCallback {
 
     private  final  String TAG = "MiniMapViewController";
-    private final static int miniWidth = 800;
-    private final static int miniHeight = 480;
+    private  static int miniWidth = 800;
+    private  static int miniHeight = 480;
     /**
      * 多实例底图
      */
@@ -129,6 +129,10 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     private final SFEnlargeMapInfo enlargeMapInfo;
 
     public MiniMapViewController() {
+        SFNaviOption op = SFNaviOption.getInstance();
+        miniWidth = op.getWidth();
+        miniHeight = op.getHeight();
+        SFLog.i(TAG,"init with width=%d,height=%d,quality=%.1f,max fps=%d",op.getWidth(),op.getHeight(),op.getJpegQuality(),op.getMaxFPS());
         this.navInfo = new SFNavInfo((int)(miniWidth * 0.4),100,10);
         this.topRightInfo = new SFTopRightInfo((int)(miniWidth * 0.4),100,10);
         this.lineInfo = new SFLineInfo((int)(miniWidth * 0.4),60,10);
@@ -417,8 +421,8 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     private void enlarge(){
         ViewGroup.LayoutParams layoutParams = mRootView.getLayoutParams();
         if (layoutParams.width == miniWidth) {
-            layoutParams.width = 800;
-            layoutParams.height = 480;
+            layoutParams.width = miniWidth;
+            layoutParams.height = miniHeight;
             offset(0, -250);
             ((TextView) mRootView.findViewById(R.id.btn_enlarge)).setText("缩小");
         } else {
@@ -769,6 +773,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
                                     for (BNavLineItem item:mLaneItems) {
                                         lineInfo.addLine(item.getDrawable());
                                     }
+                                    lineInfo.regenerateBitmap();
                                 }
                             }
                         });
@@ -1145,6 +1150,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
             public void onSnapshotReady(Bitmap bitmap) {
                 lastSnapMap = bitmap;
                 lastSnapTimestamp = System.currentTimeMillis();
+                SFLog.i(TAG,"makeSnapMap ready size %d * %d",bitmap.getWidth(),bitmap.getHeight());
             }
         },true);
 
@@ -1235,10 +1241,11 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
             toast("target mac is null or empty");
             return;
         }
-        int width = 800;
-        int height = 480;
+        int width = SFNaviOption.getInstance().getWidth();
+        int height = SFNaviOption.getInstance().getHeight();
         int rotation = 0;
-        float quality = 0.3f;
+        float quality = SFNaviOption.getInstance().getJpegQuality();
+        int maxFps = SFNaviOption.getInstance().getMaxFPS();
         SFPreviewVideoConfiguration config = new SFPreviewVideoConfiguration();
         config.setPreviewType(SFPreviewVideoConfiguration.PREVIEW_TYPE_IMAGE);
         config.setAspectSizeForNaviMap(false);
@@ -1247,7 +1254,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         config.setJpegQuality(quality);
         config.setMirroredHorizontally(false);
         config.setRotation(rotation);
-        config.setMaxFps(30);
+        config.setMaxFps(maxFps);
 //        this.cycleImage();
         this.makeSnapMap();
         this.videoManager.startPreviewVideo(config,targetMac);
