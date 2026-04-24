@@ -1241,6 +1241,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
             toast("target mac is null or empty");
             return;
         }
+        NavBitmapFactory.clearCache();
         int width = SFNaviOption.getInstance().getWidth();
         int height = SFNaviOption.getInstance().getHeight();
         int rotation = 0;

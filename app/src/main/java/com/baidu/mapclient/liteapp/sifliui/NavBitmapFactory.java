@@ -9,6 +9,8 @@ import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 
+import com.sifli.siflicore.log.SFLog;
+
 /**
  * @author hecq
  * @email 33912760@qq.com
@@ -17,6 +19,7 @@ import android.util.Log;
  */
 public class NavBitmapFactory {
     private final static String TAG = "NavBitmapFactory";
+    private static  Bitmap reusableBitmap;
     public static Bitmap mergeBitmap(Bitmap map, Bitmap navInfo, Bitmap topRightInfo,Bitmap enlargeMap,Bitmap lineList) {
         if(map == null)return null;
         if(map.getWidth() == 0 || map.getHeight() == 0){
@@ -68,6 +71,14 @@ public class NavBitmapFactory {
         return result;
     }
 
+    public static void clearCache(){
+        SFLog.i(TAG,"clearCache");
+        if(reusableBitmap != null){
+            reusableBitmap.recycle();
+        }
+        reusableBitmap = null;
+    }
+
     public static Bitmap makeBitmap(Bitmap map, SFNavInfo navInfo, SFTopRightInfo topRightInfo,
                                     SFEnlargeMapInfo enlargeMapInfo, SFLineInfo lineInfo) {
         if (map == null || map.getWidth() == 0 || map.getHeight() == 0) {
@@ -75,7 +86,14 @@ public class NavBitmapFactory {
         }
 
         // 创建与底图同尺寸的结果Bitmap (RGB_565 节省内存)
-        Bitmap result = Bitmap.createBitmap(map.getWidth(), map.getHeight(), Bitmap.Config.RGB_565);
+        Bitmap result = reusableBitmap;
+        if(result == null){
+            SFLog.i(TAG,"makeBitmap create bitmap for reuse");
+             result = Bitmap.createBitmap(map.getWidth(), map.getHeight(), Bitmap.Config.ARGB_8888);
+            reusableBitmap = result;
+        }
+
+        result.eraseColor(0);
         Canvas canvas = new Canvas(result);
 
         // 1. 绘制底图
