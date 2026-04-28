@@ -836,6 +836,8 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
                                     navInfo.setDistanceText(distanceText + "进入");
                                     navInfo.setRoadNameText(naviInfo.getRoadName());
                                     navInfo.setVisible(true);
+                                    SFLog.i(TAG,naviInfo.toString());
+
                                 } else {
                                     Toast.makeText(mContext, "诱导信息为空！！", Toast.LENGTH_SHORT).show();
                                 }
