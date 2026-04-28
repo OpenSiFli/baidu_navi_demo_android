@@ -95,6 +95,26 @@
                 android:text="480 * 272"/>
 
         </RadioGroup>
+        <RadioGroup
+            android:visibility="visible"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <RadioButton
+                android:id="@+id/main_mode_image_rb"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="导航图像"/>
+
+            <RadioButton
+                android:id="@+id/main_mode_info_rb"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="导航信息"/>
+
+        </RadioGroup>
         <Button
             android:id="@+id/naviBtn"
             android:layout_width="match_parent"

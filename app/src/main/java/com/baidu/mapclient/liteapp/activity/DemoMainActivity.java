@@ -88,6 +88,8 @@ public class DemoMainActivity extends Activity {
     private EditText maxFpsEt;
     private RadioButton size800_480Rb;
     private RadioButton size480_272Rb;
+    private RadioButton imageModeRb;
+    private RadioButton infoModeRb;
     private TextView versionTv;
     private Button logBtn;
     private String targetMac;
@@ -232,6 +234,8 @@ public class DemoMainActivity extends Activity {
         maxFpsEt = findViewById(R.id.main_max_fps_et);
         size800_480Rb = findViewById(R.id.main_size_800_rb);
         size480_272Rb = findViewById(R.id.main_size_480_rb);
+        imageModeRb = findViewById(R.id.main_mode_image_rb);
+        infoModeRb = findViewById(R.id.main_mode_info_rb);
         versionTv = findViewById(R.id.main_version_tv);
         versionTv.setText(getVersionName(this));
 
@@ -606,6 +610,7 @@ public class DemoMainActivity extends Activity {
         boolean isSize800 = this.size800_480Rb.isChecked();
         boolean isSize480 = this.size480_272Rb.isChecked();
         boolean useSocket = this.useSocketCb.isChecked();
+        int mode = this.imageModeRb.isChecked() ? SFNaviOption.NAV_MODE_IMAGE : SFNaviOption.NAV_MODE_INFO;
 
         int maxFps = 20;
         float jpegQuality = 0.2f;
@@ -627,6 +632,7 @@ public class DemoMainActivity extends Activity {
         option.setWidth(width);
         option.setHeight(height);
         option.setUseSocket(useSocket);
+        option.setNavMode(mode);
     }
 
    @Override

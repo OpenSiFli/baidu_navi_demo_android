@@ -49,6 +49,9 @@ import com.baidu.mapclient.liteapp.sifliui.SFEnlargeMapInfo;
 import com.baidu.mapclient.liteapp.sifliui.SFLineInfo;
 import com.baidu.mapclient.liteapp.sifliui.SFNavInfo;
 import com.baidu.mapclient.liteapp.sifliui.SFTopRightInfo;
+import com.baidu.mapclient.liteapp.sifliui.sendinfo.SFPreviewNavContent;
+import com.baidu.mapclient.liteapp.sifliui.sendinfo.SFPreviewNavInfo;
+import com.baidu.mapclient.liteapp.sifliui.sendinfo.SFTurnIconMaker;
 import com.baidu.mapclient.liteapp.tts.TTSHolder;
 import com.baidu.mapclient.liteapp.util.speedview.SpeedView;
 import com.baidu.navisdk.adapter.BaiduNaviManagerFactory;
@@ -57,11 +60,13 @@ import com.baidu.navisdk.adapter.IBNOuterSettingParams;
 import com.baidu.navisdk.adapter.struct.BNavLineItem;
 import com.baidu.navisdk.adapter.struct.BNaviInfo;
 import com.baidu.navisdk.adapter.struct.GuidePanelMessage;
+import com.google.gson.Gson;
 import com.sifli.siflicore.error.SFError;
 import com.sifli.siflicore.error.SFErrorCode;
 import com.sifli.siflicore.image.ISifliImageHelper;
 import com.sifli.siflicore.log.SFLog;
 import com.sifli.siflicore.shell.SFBleShellStatus;
+import com.sifli.siflicore.util.StringUtil;
 import com.sifli.sifliimagelib.helper.SifliImageHelper;
 import com.sifli.sifliotasdk.manager.ISFPreviewVideoManagerCallback;
 import com.sifli.sifliotasdk.manager.SFPreviewVideoConfiguration;
@@ -746,6 +751,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
                     @Override
                     public void onSpeedUpdate(int speed, int overSpeed) {
                         Log.e("onSpeedUpdate", "speed:" + speed);
+                        navInfo.setSpeed(speed);
                         mRootView.post(new Runnable() {
                             @Override
                             public void run() {
@@ -836,6 +842,10 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
                                     navInfo.setDistanceText(distanceText + "进入");
                                     navInfo.setRoadNameText(naviInfo.getRoadName());
                                     navInfo.setVisible(true);
+
+                                    navInfo.setRoadName(naviInfo.getRoadName());
+                                    navInfo.setDistance(navInfo.getDistance());
+                                    navInfo.setTurnIconName(naviInfo.getTurnIconName());
                                     SFLog.i(TAG,naviInfo.toString());
 
                                 } else {
@@ -900,17 +910,23 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
             @Override
             public void run() {
                 int time;
+                int distance = 0;
+                int lights = 0;
                 if (type == 1 && mRemainDists != null && mRemainDists.length > 0) {
                     String remainInfo = "途:" + getRemainDist(mRemainDists[0]) +
                             getFormatTime(mRemainTimes[0]) + mViaRemainLights + "红绿灯";
                     ((TextView) etaView.findViewById(R.id.remain_info)).setText(remainInfo);
                     time = mRemainTimes[0];
                     topRightInfo.setRemainInfo(remainInfo);
+                    distance = mRemainDists[0];
+                    lights = mViaRemainLights;
                 } else {
                     String remainInfo = "终:" + getRemainDist(mRemainDistance) + getFormatTime(mRemainTime) + mRemainLights + "红绿灯";
                     ((TextView) etaView.findViewById(R.id.remain_info)).setText(remainInfo);
                     time = mRemainTime;
                     topRightInfo.setRemainInfo(remainInfo);
+                    distance = mRemainDistance;
+                    lights = mRemainLights;
                 }
                 Calendar calendar = Calendar.getInstance();
                 calendar.add(Calendar.SECOND, time);
@@ -920,6 +936,11 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
                 ((TextView) etaView.findViewById(R.id.arrive_info)).setText(arriveInfo);
                 topRightInfo.setArriveInfo(arriveInfo);
                 topRightInfo.setVisible(true);
+
+                topRightInfo.setRemainTime(time);
+                topRightInfo.setRemainDistance(distance);
+                topRightInfo.setRemainLights(lights);
+
             }
         });
     }
@@ -1161,6 +1182,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         if(!isPreview)return;
         if(this.videoManager == null)return;
         boolean canSendImage = this.videoManager.canSendBitmap();
+        int navMode = SFNaviOption.getInstance().getNavMode();
         if(!canSendImage){
             //sdk 还没发完，不需要制作图片
             SFLog.e(TAG,"sendSingleImage when videoManager is busy");
@@ -1174,32 +1196,27 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         }else{
 
             long now = System.currentTimeMillis();
-            if(this.lastSnapMap == null || now - lastSnapTimestamp > KEEP_SNAP_TIME){
-                SFLog.i(TAG,"need make snap map...");
-                this.mainHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        makeSnapMap();
-                    }
-                });
-//                SFLog.i(TAG,"sendSingleImage request snapshotScope");
-//                this.miniMapViewManager.snapshotScope(new SnapshotReadyCallback() {
-//                    @Override
-//                    public void onSnapshotReady(Bitmap bitmap) {
-//                        onSnapReady(bitmap);
-//                    }
-//                },true);
-            }else{
-                SFLog.i(TAG,"sendSingleImage use lastSnapMap");
+            if(navMode == SFNaviOption.NAV_MODE_IMAGE){
+                if(this.lastSnapMap == null || now - lastSnapTimestamp > KEEP_SNAP_TIME){
+                    SFLog.i(TAG,"need make snap map...");
+                    this.mainHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            makeSnapMap();
+                        }
+                    });
+                }else{
+                    SFLog.i(TAG,"sendSingleImage use lastSnapMap");
+                }
 
+                if(this.lastSnapMap != null){
+                    onSnapReady(this.lastSnapMap);
+                }else{
+                    SFLog.e(TAG,"snap map is null");
+                }
+            }else if(navMode == SFNaviOption.NAV_MODE_INFO){
+                this.sendNavInfo();
             }
-
-            if(this.lastSnapMap != null){
-                onSnapReady(this.lastSnapMap);
-            }else{
-                SFLog.e(TAG,"snap map is null");
-            }
-
         }
     }
 
@@ -1226,6 +1243,38 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
 //                cycleImage();
 //            }
 //        },50);
+    }
+
+    private void sendNavInfo(){
+        SFLog.i(TAG,"sendNavInfo");
+        SFPreviewNavInfo previewNavInfo = new SFPreviewNavInfo();
+        previewNavInfo.setRoadName(this.navInfo.getRoadName());
+        previewNavInfo.setDistance(this.navInfo.getDistance());
+        previewNavInfo.setTurnIconName(this.navInfo.getTurnIconName());
+        previewNavInfo.setSpeed(this.navInfo.getSpeed());
+        previewNavInfo.setRemainDistance(this.topRightInfo.getRemainDistance());
+        previewNavInfo.setRemainTime(this.topRightInfo.getRemainTime());
+        previewNavInfo.setRemainLights(this.topRightInfo.getRemainLights());
+        previewNavInfo.setTurnIconChanged(true);
+
+
+        //转向图的ezip
+        Bitmap turnIcon = this.navInfo.getTurnIcon();
+        byte[] turnIconEZip = SFTurnIconMaker.makeTurnIconEZip(turnIcon);
+        if(turnIconEZip == null){
+            SFLog.e(TAG,"sendNavInfo turnIconEZip is null");
+            return;
+        }
+
+        Gson gson = new Gson();
+        String jsonInfo = gson.toJson(previewNavInfo);
+        byte[] infoBytes = StringUtil.getUtf8Bytes(jsonInfo);
+
+        SFPreviewNavContent content = new SFPreviewNavContent(infoBytes,turnIconEZip);
+        byte[] sendData = content.mashal();
+        long ts = System.currentTimeMillis();
+        SFLog.i(TAG,"turnicon width=%d,height=%d,info size=%d,ezip size=%d",turnIcon.getWidth(),turnIcon.getHeight(),infoBytes.length,turnIconEZip.length);
+        this.videoManager.previewNavInfo(sendData,ts);
     }
 
     private void onStartPreviewBtnTouch(){

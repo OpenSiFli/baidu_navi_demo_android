@@ -1,12 +1,15 @@
 package com.baidu.mapclient.liteapp.config;
 
 public class SFNaviOption {
+    public final static int NAV_MODE_IMAGE = 0;
+    public final static int NAV_MODE_INFO = 1;
 
     private boolean useSocket;
     private int maxFPS;
     private float jpegQuality;
     private int width;
     private int height;
+    private int navMode;
 
 
     private  static SFNaviOption _instance;
@@ -55,5 +58,13 @@ public class SFNaviOption {
 
     public void setHeight(int height) {
         this.height = height;
+    }
+
+    public int getNavMode() {
+        return navMode;
+    }
+
+    public void setNavMode(int navMode) {
+        this.navMode = navMode;
     }
 }
