@@ -24,16 +24,19 @@ public class SFPreviewNavContent {
     }
 
     public byte[] mashal(){
-        if(this.navInfo == null || this.turnIconEZip == null){
+        if(this.navInfo == null){
             return null;
         }
         int navInfoLen = this.navInfo.length;
         byte[] navInfoLenData = ByteUtil.intTo4Bytes(navInfoLen);
-        int turnIconEzipLen = this.turnIconEZip.length;
-        byte[] turnIconEzipLenData = ByteUtil.intTo4Bytes(turnIconEzipLen);
         byte[] result = ByteUtil.mergeArrays(navInfoLenData,navInfo);
-        result = ByteUtil.mergeArrays(result,turnIconEzipLenData);
-        result = ByteUtil.mergeArrays(result,turnIconEZip);
+        if(this.turnIconEZip != null){
+            int turnIconEzipLen = this.turnIconEZip.length;
+            byte[] turnIconEzipLenData = ByteUtil.intTo4Bytes(turnIconEzipLen);
+            result = ByteUtil.mergeArrays(result,turnIconEzipLenData);
+            result = ByteUtil.mergeArrays(result,turnIconEZip);
+        }
+
         return result;
     }
 }

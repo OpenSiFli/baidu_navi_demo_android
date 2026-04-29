@@ -844,9 +844,9 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
                                     navInfo.setVisible(true);
 
                                     navInfo.setRoadName(naviInfo.getRoadName());
-                                    navInfo.setDistance(navInfo.getDistance());
+                                    navInfo.setDistance(naviInfo.getDistance());
                                     navInfo.setTurnIconName(naviInfo.getTurnIconName());
-                                    SFLog.i(TAG,naviInfo.toString());
+                                    SFLog.i(TAG,"navinfo:" + naviInfo.toString());
 
                                 } else {
                                     Toast.makeText(mContext, "诱导信息为空！！", Toast.LENGTH_SHORT).show();
@@ -1255,26 +1255,37 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         previewNavInfo.setRemainDistance(this.topRightInfo.getRemainDistance());
         previewNavInfo.setRemainTime(this.topRightInfo.getRemainTime());
         previewNavInfo.setRemainLights(this.topRightInfo.getRemainLights());
-        previewNavInfo.setTurnIconChanged(true);
-
+        previewNavInfo.setTurnIconChanged(this.navInfo.isTurnIconChanged());
 
         //转向图的ezip
+        byte[] turnIconEZip = null;
         Bitmap turnIcon = this.navInfo.getTurnIcon();
-        byte[] turnIconEZip = SFTurnIconMaker.makeTurnIconEZip(turnIcon);
-        if(turnIconEZip == null){
-            SFLog.e(TAG,"sendNavInfo turnIconEZip is null");
-            return;
+        if(this.navInfo.isTurnIconChanged()){
+
+            turnIconEZip = SFTurnIconMaker.makeTurnIconEZip(turnIcon);
+            if(turnIconEZip == null){
+                SFLog.e(TAG,"sendNavInfo turnIconEZip is null");
+                return;
+            }
         }
+
 
         Gson gson = new Gson();
         String jsonInfo = gson.toJson(previewNavInfo);
         byte[] infoBytes = StringUtil.getUtf8Bytes(jsonInfo);
+        SFLog.i(TAG,"navInfo:%s",jsonInfo);
 
         SFPreviewNavContent content = new SFPreviewNavContent(infoBytes,turnIconEZip);
         byte[] sendData = content.mashal();
         long ts = System.currentTimeMillis();
-        SFLog.i(TAG,"turnicon width=%d,height=%d,info size=%d,ezip size=%d",turnIcon.getWidth(),turnIcon.getHeight(),infoBytes.length,turnIconEZip.length);
+        if(turnIconEZip != null){
+            SFLog.i(TAG,"turnicon width=%d,height=%d,info size=%d,ezip size=%d",turnIcon.getWidth(),turnIcon.getHeight(),infoBytes.length,turnIconEZip.length);
+        }else{
+            SFLog.i(TAG,"turnicon info size=%d,no ezip",infoBytes.length);
+        }
+
         this.videoManager.previewNavInfo(sendData,ts);
+        this.navInfo.setTurnIconWasSent();
     }
 
     private void onStartPreviewBtnTouch(){

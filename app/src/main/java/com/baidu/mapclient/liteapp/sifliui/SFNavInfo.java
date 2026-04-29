@@ -17,6 +17,7 @@ public class SFNavInfo extends  SFNavObject{
     private int distance;
     private String turnIconName;
     private int speed;
+    private boolean turnIconChanged = false;
 
     public SFNavInfo(int width,int height,int radius){
         super(width,height,radius);
@@ -29,6 +30,15 @@ public class SFNavInfo extends  SFNavObject{
     public void setTurnIcon(Bitmap turnIcon) {
         this.turnIcon = turnIcon;
         this.cachedScaledIcon = null; // 清除缓存
+        this.turnIconChanged = true;
+    }
+
+    public  void setTurnIconWasSent(){
+        this.turnIconChanged = false;
+    }
+
+    public boolean isTurnIconChanged(){
+        return this.turnIconChanged;
     }
 
     public Bitmap getScaledIcon(int targetSize) {
