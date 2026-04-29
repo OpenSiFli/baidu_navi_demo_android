@@ -1233,7 +1233,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
 //            enlargeMap = makeViewBitmap(enlargeView);
 //        }
 //        Bitmap bitmap = NavBitmapFactory.mergeBitmap(map,navInfo,bottomInfo,enlargeMap,lineListMap);
-        Bitmap bitmap = NavBitmapFactory.makeBitmap(map,navInfo,topRightInfo,enlargeMapInfo,lineInfo);
+        Bitmap bitmap = NavBitmapFactory.makeBitmap(map,navInfo,topRightInfo,enlargeMapInfo,lineInfo,this.fps);
         SFLog.i(TAG,"previewVideoSample...");
         long ts = System.currentTimeMillis();
         if(bitmap != null)this.videoManager.previewVideoSample(bitmap,ts);

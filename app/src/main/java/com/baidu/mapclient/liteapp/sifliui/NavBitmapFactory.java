@@ -80,7 +80,7 @@ public class NavBitmapFactory {
     }
 
     public static Bitmap makeBitmap(Bitmap map, SFNavInfo navInfo, SFTopRightInfo topRightInfo,
-                                    SFEnlargeMapInfo enlargeMapInfo, SFLineInfo lineInfo) {
+                                    SFEnlargeMapInfo enlargeMapInfo, SFLineInfo lineInfo,float fps) {
         if (map == null || map.getWidth() == 0 || map.getHeight() == 0) {
             return null;
         }
@@ -125,6 +125,9 @@ public class NavBitmapFactory {
         if (enlargeMapInfo != null && enlargeMapInfo.isVisible() && enlargeMapInfo.getEnlargeMap() != null) {
             drawEnlargeMap(canvas, enlargeMapInfo, marginLeft, currentTop);
         }
+
+        // 4. 绘制左下角FPS信息
+        drawFps(canvas, fps, map.getWidth(), map.getHeight());
 
         return result;
     }
@@ -252,6 +255,45 @@ public class NavBitmapFactory {
 
         // 按原始尺寸绘制，左边距10
         canvas.drawBitmap(enlargeMap, left, top, null);
+    }
+
+    /**
+     * 在左下角绘制FPS信息
+     * @param canvas 画布
+     * @param fps 帧率值
+     * @param screenWidth 屏幕宽度
+     * @param screenHeight 屏幕高度
+     */
+    private static void drawFps(Canvas canvas, float fps, int screenWidth, int screenHeight) {
+        // 格式化FPS文本，保留1位小数
+        String fpsText = String.format("fps:%.1f", fps);
+
+        // 创建画笔
+        Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        textPaint.setColor(Color.WHITE);
+        textPaint.setTextSize(convertSpToPx(6)); // 使用12sp字体大小
+
+        // 测量文本尺寸
+        float textWidth = textPaint.measureText(fpsText);
+        float textHeight = textPaint.getTextSize();
+
+        // 计算背景尺寸（添加内边距）
+        int padding = 8;
+        float bgLeft = 10; // 左边距10
+        float bgBottom = screenHeight - 10; // 底边距10
+        float bgRight = bgLeft + textWidth + padding * 2;
+        float bgTop = bgBottom - textHeight - padding * 2;
+
+        // 绘制半透明黑色背景
+        Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        bgPaint.setColor(Color.parseColor("#CC000000")); // 80%透明度黑色
+        RectF bgRect = new RectF(bgLeft, bgTop, bgRight, bgBottom);
+        canvas.drawRoundRect(bgRect, 8, 8, bgPaint); // 圆角背景
+
+        // 绘制文本（居中于背景）
+        float textX = bgLeft + padding;
+        float textY = bgBottom - padding - (textHeight / 2) + (textPaint.descent() - textPaint.ascent()) / 2;
+        canvas.drawText(fpsText, textX, textY, textPaint);
     }
 
     // 辅助方法：将sp转换为px (假设context可用，或使用默认密度)
