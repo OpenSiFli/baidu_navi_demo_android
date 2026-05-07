@@ -1,8 +1,8 @@
 package com.baidu.mapclient.liteapp.config;
 
 public class SFNaviOption {
-    public final static int NAV_MODE_IMAGE = 0;
-    public final static int NAV_MODE_INFO = 1;
+    public final static int NAV_MODE_IMAGE = 1;
+    public final static int NAV_MODE_INFO = 2;
 
     private boolean useSocket;
     private int maxFPS;

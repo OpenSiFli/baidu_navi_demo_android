@@ -1417,6 +1417,14 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
 //        this.speedTv.setText(this.speedView.getCurrentSpeedText());
     }
 
+    @Override
+    public void onPreviewModeChange(int i) {
+        SFLog.i(TAG,"onPreviewModeChange %d",i);
+        if(i == SFNaviOption.NAV_MODE_IMAGE || i == SFNaviOption.NAV_MODE_INFO){
+            SFNaviOption.getInstance().setNavMode(i);
+        }
+    }
+
 
     private void toast(String msg){
         Toast.makeText(mContext,msg,Toast.LENGTH_SHORT).show();
