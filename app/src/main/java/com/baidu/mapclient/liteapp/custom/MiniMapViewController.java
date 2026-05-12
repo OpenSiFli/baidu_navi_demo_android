@@ -1222,6 +1222,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
 
     private  void onSnapReady(Bitmap map){
         SFLog.i(TAG,"onSnapReady size %d * %d",map.getWidth(),map.getHeight());
+        long ts = System.currentTimeMillis();
 //        Bitmap navInfo = makeViewBitmap(this.topGuideInfoLl);
 //        Bitmap bottomInfo = makeViewBitmap(this.bottomGuideInfoRl);
 //        Bitmap lineListMap = null;
@@ -1235,7 +1236,6 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
 //        Bitmap bitmap = NavBitmapFactory.mergeBitmap(map,navInfo,bottomInfo,enlargeMap,lineListMap);
         Bitmap bitmap = NavBitmapFactory.makeBitmap(map,navInfo,topRightInfo,enlargeMapInfo,lineInfo,this.fps);
         SFLog.i(TAG,"previewVideoSample...");
-        long ts = System.currentTimeMillis();
         if(bitmap != null)this.videoManager.previewVideoSample(bitmap,ts);
 //        this.mBackgroundHandler.postDelayed(new Runnable() {
 //            @Override
