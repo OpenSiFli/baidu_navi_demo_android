@@ -40,6 +40,7 @@ import com.baidu.mapclient.liteapp.ForegroundService;
 import com.baidu.mapclient.liteapp.R;
 import com.baidu.mapclient.liteapp.config.SFNaviOption;
 import com.baidu.mapclient.liteapp.devicescan.DeviceScanActivity;
+import com.baidu.mapclient.liteapp.util.BTBondManager;
 import com.baidu.navisdk.adapter.BNRoutePlanNode;
 import com.baidu.navisdk.adapter.BNaviCommonParams;
 import com.baidu.navisdk.adapter.BaiduNaviManagerFactory;
@@ -49,6 +50,7 @@ import com.baidu.navisdk.adapter.IBNOuterSettingParams;
 import com.baidu.navisdk.adapter.IBNRoutePlanManager;
 import com.baidu.navisdk.adapter.struct.BNRoutePlanInfos;
 import com.sifli.siflicore.log.SFLog;
+import com.sifli.siflicore.util.StringUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -96,6 +98,7 @@ public class DemoMainActivity extends Activity {
 
     private BroadcastReceiver mReceiver;
     private int mPageType = BNDemoUtils.NORMAL;
+    private BTBondManager bondManager;
 
     private final Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
@@ -172,7 +175,7 @@ public class DemoMainActivity extends Activity {
         initPermission();
 
         initBroadCastReceiver();
-
+        this.bondManager = new BTBondManager(this.getApplicationContext());
     }
 
     private void initBroadCastReceiver() {
@@ -340,6 +343,12 @@ public class DemoMainActivity extends Activity {
             mNaviBtn.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    applySetting();
+                    boolean isBond = validateSppIsBond();
+                    if(!isBond){
+                        toast("请先在设置中对设备配对");
+                        return;
+                    }
                     if (BaiduNaviManagerFactory.getBaiduNaviManager().isInited()) {
                         String url = BNDemoFactory.getInstance().getTestEnvironmentUrl(DemoMainActivity.this);
                         if (url.length() != 0) {
@@ -401,6 +410,11 @@ public class DemoMainActivity extends Activity {
                 @Override
                 public void onClick(View v) {
                     applySetting();
+                    boolean isBond = validateSppIsBond();
+                    if(!isBond){
+                        toast("请先在设置中对设备配对");
+                        return;
+                    }
                     if (BaiduNaviManagerFactory.getBaiduNaviManager().isInited()) {
                         mPageType = BNDemoUtils.ANALOG;
                         Bundle bundle = new Bundle();
@@ -635,6 +649,20 @@ public class DemoMainActivity extends Activity {
         option.setNavMode(mode);
     }
 
+    private boolean validateSppIsBond(){
+        if(SFNaviOption.getInstance().isUseSocket()){
+            return  true;
+        }
+        if(StringUtil.isNullOrEmpty(this.targetMac)){
+            return false;
+        }
+        return  this.bondManager.isBond(this.targetMac);
+    }
+
+    private void toast(String msg){
+        Toast.makeText(DemoMainActivity.this, msg, Toast.LENGTH_SHORT).show();
+    }
+
    @Override
    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
@@ -643,6 +671,8 @@ public class DemoMainActivity extends Activity {
            if(resultCode == Activity.RESULT_OK){
                this.targetMac = data.getStringExtra(DeviceScanActivity.EXTRA_BLE_DEVICE);
                this.searchDeviceBtn.setText("搜索蓝牙 " + targetMac);
+               boolean isBond = this.bondManager.isBond(this.targetMac);
+               if(!isBond)this.bondManager.createBondByMac(this.targetMac);
            }
        }
     }

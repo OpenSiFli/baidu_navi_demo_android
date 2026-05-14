@@ -68,7 +68,10 @@ import com.sifli.siflicore.log.SFLog;
 import com.sifli.siflicore.shell.SFBleShellStatus;
 import com.sifli.siflicore.util.StringUtil;
 import com.sifli.sifliimagelib.helper.SifliImageHelper;
+import com.sifli.sifliotasdk.manager.ISFPreviewImageManagerCallback;
 import com.sifli.sifliotasdk.manager.ISFPreviewVideoManagerCallback;
+import com.sifli.sifliotasdk.manager.SFPreviewBaseManager;
+import com.sifli.sifliotasdk.manager.SFPreviewImageManager;
 import com.sifli.sifliotasdk.manager.SFPreviewVideoConfiguration;
 import com.sifli.sifliotasdk.manager.SFPreviewVideoManager;
 import com.sifli.sifliotasdk.manager.SFTransmissionMode;
@@ -86,7 +89,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewVideoManagerCallback {
+public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewImageManagerCallback {
 
     private  final  String TAG = "MiniMapViewController";
     private  static int miniWidth = 800;
@@ -109,7 +112,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     private Button snapBtn;
 
     private int speed;
-   private SFPreviewVideoManager videoManager;
+   private SFPreviewImageManager videoManager;
    private Handler mainHandler = new Handler(Looper.getMainLooper());
    private boolean isPreview = false;
    private TextView fpsTv;
@@ -180,7 +183,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     private void initPreviewNav(){
         this.speedView = new SpeedView();
         this.startBackgroundThread();
-        this.videoManager = SFPreviewVideoManager.getInstance();
+        this.videoManager = SFPreviewImageManager.getInstance();
         this.videoManager.setCallback(this);
         Activity a = (Activity)mContext;
         this.transMode = SFTransmissionMode.TRANSMISSION_MODE_SPP;
@@ -1311,7 +1314,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
         int maxFps = SFNaviOption.getInstance().getMaxFPS();
         SFPreviewVideoConfiguration config = new SFPreviewVideoConfiguration();
         config.setPreviewType(SFPreviewVideoConfiguration.PREVIEW_TYPE_IMAGE);
-        config.setAspectSizeForNaviMap(false);
+        config.setAspectSizeForImage(false);
         config.setWatchScreenWidth(width);
         config.setWatchScreenHeight(height);
         config.setJpegQuality(quality);
@@ -1364,7 +1367,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     }
 
     @Override
-    public void completeWithError(SFPreviewVideoManager sfPreviewVideoManager, SFError sfError) {
+    public void completeWithError(SFPreviewBaseManager sfPreviewVideoManager, SFError sfError) {
         this.isPreview = false;
         this.bgButton.setText("开始预览");
         String msg = String.format("completeWithError:%s",sfError);
@@ -1376,7 +1379,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     }
 
     @Override
-    public void updateManagerState(SFPreviewVideoManager sfPreviewVideoManager, int status) {
+    public void updateManagerState(SFPreviewBaseManager sfPreviewVideoManager, int status) {
         this.bgButton.setEnabled(status != SFBleShellStatus.SEARCH_AND_CONNECTING);
         if(this.transMode == SFTransmissionMode.TRANSMISSION_MODE_SOCKET){
             if(!this.videoManager.isBusy() && status == SFBleShellStatus.MODULE_WORKING){
@@ -1386,7 +1389,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewV
     }
 
     @Override
-    public void onFps(SFPreviewVideoManager sfPreviewVideoManager, float v) {
+    public void onFps(SFPreviewBaseManager sfPreviewVideoManager, float v) {
         this.fps = v;
 
     }
