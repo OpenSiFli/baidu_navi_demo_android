@@ -51,6 +51,7 @@ import com.baidu.navisdk.adapter.IBNRoutePlanManager;
 import com.baidu.navisdk.adapter.struct.BNRoutePlanInfos;
 import com.sifli.siflicore.log.SFLog;
 import com.sifli.siflicore.util.StringUtil;
+import com.sifli.sifliotasdk.manager.SFTransmissionMode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -85,7 +86,14 @@ public class DemoMainActivity extends Activity {
     private Button mGotoSettingsBtn = null;
     private Button limitChange = null;
     private Button searchDeviceBtn;
-    private CheckBox useSocketCb;
+//    private CheckBox useSocketCb;
+    private RadioButton comunicateBleRb;
+    private RadioButton comunicateSppRb;
+    private RadioButton comunicateSocketServerRb;
+    private RadioButton comunicateSocketClientRb;
+    private EditText ipEt;
+    private EditText portEt;
+
     private EditText jpegQualityEt;
     private EditText maxFpsEt;
     private RadioButton size800_480Rb;
@@ -232,7 +240,14 @@ public class DemoMainActivity extends Activity {
         mGotoSettingsBtn.setText("导航设置" + getVersionName(this));
         searchDeviceBtn = findViewById(R.id.navi_search_device_btn);
         logBtn = findViewById(R.id.navi_log_btn);
-        useSocketCb = findViewById(R.id.main_use_socket_cb);
+//        useSocketCb = findViewById(R.id.main_use_socket_cb);
+        comunicateBleRb = findViewById(R.id.main_comunicate_ble_rb);
+        comunicateSppRb = findViewById(R.id.main_comunicate_spp_rb);
+        comunicateSocketServerRb = findViewById(R.id.main_comunicate_socket_server_rb);
+        comunicateSocketClientRb = findViewById(R.id.main_comunicate_socket_client_rb);
+        ipEt = findViewById(R.id.main_server_ip_et);
+        portEt = findViewById(R.id.main_server_port_et);
+
         jpegQualityEt = findViewById(R.id.main_jpeg_quality_et);
         maxFpsEt = findViewById(R.id.main_max_fps_et);
         size800_480Rb = findViewById(R.id.main_size_800_rb);
@@ -509,13 +524,13 @@ public class DemoMainActivity extends Activity {
                 onLogBtnTouch();
             }
         });
-        useSocketCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                SFLog.i("DEMO MAIN","use socket =%b",isChecked);
-                SFNaviOption.getInstance().setUseSocket(isChecked);
-            }
-        });
+//        useSocketCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//                SFLog.i("DEMO MAIN","use socket =%b",isChecked);
+//                SFNaviOption.getInstance().setUseSocket(isChecked);
+//            }
+//        });
     }
     public static HashMap<IBNOuterSettingParams.BNavSettingItem, Boolean> mSdkFunc = new HashMap<>();
     private void initNaviViewFunc() {
@@ -621,11 +636,19 @@ public class DemoMainActivity extends Activity {
         SFNaviOption option = SFNaviOption.getInstance();
         String maxFpsTxt = this.maxFpsEt.getText().toString();
         String jpegQualityTxt = this.jpegQualityEt.getText().toString();
+        String ipTxt = this.ipEt.getText().toString();
+        String portTxt = this.portEt.getText().toString();
         boolean isSize800 = this.size800_480Rb.isChecked();
         boolean isSize480 = this.size480_272Rb.isChecked();
-        boolean useSocket = this.useSocketCb.isChecked();
+        int transMode = SFTransmissionMode.TRANSMISSION_MODE_SPP;
+        if(this.comunicateBleRb.isChecked())transMode = SFTransmissionMode.TRANSMISSION_MODE_BLE;
+        if(this.comunicateSppRb.isChecked())transMode = SFTransmissionMode.TRANSMISSION_MODE_SPP;
+        if(this.comunicateSocketServerRb.isChecked())transMode = SFTransmissionMode.TRANSMISSION_MODE_SOCKET_SERVER;
+        if(this.comunicateSocketClientRb.isChecked())transMode = SFTransmissionMode.TRANSMISSION_MODE_SOCKET_CLIENT;
+//        boolean useSocket = this.useSocketCb.isChecked();
         int mode = this.imageModeRb.isChecked() ? SFNaviOption.NAV_MODE_IMAGE : SFNaviOption.NAV_MODE_INFO;
 
+        int port = 2025;
         int maxFps = 20;
         float jpegQuality = 0.2f;
         int width = 800;
@@ -637,6 +660,7 @@ public class DemoMainActivity extends Activity {
         try{
             maxFps = Integer.parseInt(maxFpsTxt);
             jpegQuality = Float.parseFloat(jpegQualityTxt);
+            port = Integer.parseInt(portTxt);
         }catch (Exception e){
             SFLog.e("MAIN","applySetting error %s",e);
         }
@@ -645,12 +669,15 @@ public class DemoMainActivity extends Activity {
         option.setJpegQuality(jpegQuality);
         option.setWidth(width);
         option.setHeight(height);
-        option.setUseSocket(useSocket);
+//        option.setUseSocket(useSocket);
+        option.setTransMode(transMode);
         option.setNavMode(mode);
+        option.setServerIP(ipTxt);
+        option.setServerPort(port);
     }
 
     private boolean validateSppIsBond(){
-        if(SFNaviOption.getInstance().isUseSocket()){
+        if(SFNaviOption.getInstance().getTransMode() != SFTransmissionMode.TRANSMISSION_MODE_SPP){
             return  true;
         }
         if(StringUtil.isNullOrEmpty(this.targetMac)){

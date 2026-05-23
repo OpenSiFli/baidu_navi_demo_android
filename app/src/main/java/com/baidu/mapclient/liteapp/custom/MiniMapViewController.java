@@ -186,10 +186,10 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewI
         this.videoManager = SFPreviewImageManager.getInstance();
         this.videoManager.setCallback(this);
         Activity a = (Activity)mContext;
-        this.transMode = SFTransmissionMode.TRANSMISSION_MODE_SPP;
-        if(SFNaviOption.getInstance().isUseSocket()){
-            this.transMode = SFTransmissionMode.TRANSMISSION_MODE_SOCKET;
-        }
+        this.transMode =SFNaviOption.getInstance().getTransMode();
+//        if(SFNaviOption.getInstance().isUseSocket()){
+//            this.transMode = SFTransmissionMode.TRANSMISSION_MODE_SOCKET;
+//        }
         SFLog.i(TAG,"initPreviewNav Trans Mode = %d",this.transMode);
         ISifliImageHelper imageHelper = new SifliImageHelper();
         this.videoManager.init(a.getApplication(), this.transMode,imageHelper);
@@ -1294,9 +1294,10 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewI
     private void onStartPreviewBtnTouch(){
         SFLog.i(TAG,"onStartPreviewBtnTouch trans mode=%d",this.transMode);
         this.speedView.clear();
-        if(this.transMode == SFTransmissionMode.TRANSMISSION_MODE_SOCKET){
+        this.videoManager.setSocketMtu(16);
+        if(this.transMode == SFTransmissionMode.TRANSMISSION_MODE_SOCKET_SERVER){
             this.videoManager.startTcpListen(2025);
-            this.videoManager.setSocketMtu(16);
+
         }else{
             this.startPreview();
         }
@@ -1323,7 +1324,14 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewI
         config.setMaxFps(maxFps);
 //        this.cycleImage();
         this.makeSnapMap();
-        this.videoManager.startPreviewVideo(config,targetMac);
+        if(this.transMode == SFTransmissionMode.TRANSMISSION_MODE_SOCKET_CLIENT){
+            String ip = SFNaviOption.getInstance().getServerIP();
+            int port = SFNaviOption.getInstance().getServerPort();
+            this.videoManager.startPreviewVideo(config,ip,port);
+        }else{
+            this.videoManager.startPreviewVideo(config,targetMac);
+        }
+
 //        this.videoManager.startPreviewVideo(config,"BB:00:00:AB:00:19");
     }
 
@@ -1381,7 +1389,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewI
     @Override
     public void updateManagerState(SFPreviewBaseManager sfPreviewVideoManager, int status) {
         this.bgButton.setEnabled(status != SFBleShellStatus.SEARCH_AND_CONNECTING);
-        if(this.transMode == SFTransmissionMode.TRANSMISSION_MODE_SOCKET){
+        if(this.transMode == SFTransmissionMode.TRANSMISSION_MODE_SOCKET_SERVER){
             if(!this.videoManager.isBusy() && status == SFBleShellStatus.MODULE_WORKING){
                 this.startPreview();
             }
