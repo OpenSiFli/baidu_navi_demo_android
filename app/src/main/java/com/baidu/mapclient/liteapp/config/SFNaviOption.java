@@ -13,6 +13,7 @@ public class SFNaviOption {
     private int transMode;
     private String serverIP;
     private int serverPort;
+    private int socketMtu;
 
 
     private  static SFNaviOption _instance;
@@ -93,5 +94,13 @@ public class SFNaviOption {
 
     public void setServerPort(int serverPort) {
         this.serverPort = serverPort;
+    }
+
+    public int getSocketMtu() {
+        return socketMtu;
+    }
+
+    public void setSocketMtu(int socketMtu) {
+        this.socketMtu = socketMtu;
     }
 }

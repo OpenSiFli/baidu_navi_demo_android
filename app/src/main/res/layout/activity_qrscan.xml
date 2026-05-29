@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".activity.QRScanActivity">
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <cn.bingoogolapple.qrcode.zxing.ZXingView
+            android:id="@+id/zxingview"
+            style="@style/MatchMatch"
+            app:qrcv_animTime="1000"
+            app:qrcv_borderColor="@android:color/white"
+            app:qrcv_borderSize="1dp"
+            app:qrcv_cornerColor="@color/sf_666666"
+            app:qrcv_cornerLength="20dp"
+            app:qrcv_cornerSize="3dp"
+            app:qrcv_maskColor="#33FFFFFF"
+            app:qrcv_rectWidth="200dp"
+            app:qrcv_scanLineColor="@color/sf_666666"
+            app:qrcv_scanLineSize="1dp"
+            app:qrcv_topOffset="200dp" />
+        <Button
+            android:id="@+id/qrscan_clost_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#55333333"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="60dp"
+            android:textColor="@color/white"
+            android:textSize="15sp"
+            android:text="关闭"/>
+    </FrameLayout>
+
+
+
+</LinearLayout>

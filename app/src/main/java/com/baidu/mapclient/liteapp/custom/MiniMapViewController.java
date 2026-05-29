@@ -1293,10 +1293,12 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewI
 
     private void onStartPreviewBtnTouch(){
         SFLog.i(TAG,"onStartPreviewBtnTouch trans mode=%d",this.transMode);
+        int socketMtu = SFNaviOption.getInstance().getSocketMtu();
+        int port = SFNaviOption.getInstance().getServerPort();
         this.speedView.clear();
-        this.videoManager.setSocketMtu(16);
+        this.videoManager.setSocketMtu(socketMtu);
         if(this.transMode == SFTransmissionMode.TRANSMISSION_MODE_SOCKET_SERVER){
-            this.videoManager.startTcpListen(2025);
+            this.videoManager.startTcpListen(port);
 
         }else{
             this.startPreview();
@@ -1328,7 +1330,10 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewI
             String ip = SFNaviOption.getInstance().getServerIP();
             int port = SFNaviOption.getInstance().getServerPort();
             this.videoManager.startPreviewVideo(config,ip,port);
-        }else{
+        }else if(this.transMode == SFTransmissionMode.TRANSMISSION_MODE_SPP || this.transMode == SFTransmissionMode.TRANSMISSION_MODE_BLE){
+            this.videoManager.startPreviewVideo(config,targetMac);
+        }else if(this.transMode == SFTransmissionMode.TRANSMISSION_MODE_SOCKET_SERVER){
+            //todo 改进sdk的入口命名为startPreviewVideoAsSocketServer.
             this.videoManager.startPreviewVideo(config,targetMac);
         }
 

@@ -36,6 +36,14 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
     <uses-permission
         android:name="android.permission.BLUETOOTH"
         android:maxSdkVersion="30" />
@@ -51,7 +59,7 @@
         android:name="com.baidu.mapclient.liteapp.ONApplication"
         android:allowBackup="true"
         android:hardwareAccelerated="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/icon_1024"
         android:label="@string/app_name"
         android:largeHeap="true"
         android:theme="@style/AppTheme"
@@ -131,6 +139,9 @@
             android:name=".devicescan.DeviceScanActivity"
             android:screenOrientation="portrait" />
         <activity android:name=".activity.LogsActivity" />
+        <activity
+            android:name=".activity.QRScanActivity"
+            android:exported="false" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

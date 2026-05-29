@@ -14,13 +14,28 @@
         android:paddingTop="@dimen/activity_vertical_margin"
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingBottom="@dimen/activity_vertical_margin">
-        <TextView
-            android:id="@+id/main_version_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="0dp"
-            android:text="Ver:1.0.0"
-            />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/main_version_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="0dp"
+                android:text="Ver:1.0.0" />
+
+            <ImageButton
+                android:id="@+id/main_qr_scan_ib"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/qr_scan" />
+
+        </RelativeLayout>
+
         <LinearLayout
             android:visibility="visible"
             android:orientation="vertical"
@@ -69,36 +84,7 @@
             </RadioGroup>
 
         </LinearLayout>
-        <LinearLayout
-            android:visibility="visible"
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Server IP"
-                />
-            <EditText
-                android:id="@+id/main_server_ip_et"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:hint="IP"
-                android:text="192.168.49.1"
-                />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Port"
-                />
-            <EditText
-                android:id="@+id/main_server_port_et"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:hint="Port"
-                android:text="2025"
-                />
-        </LinearLayout>
+
 
         <LinearLayout
             android:visibility="visible"
@@ -137,26 +123,82 @@
                 android:text="20"
                 />
         </LinearLayout>
-        <RadioGroup
+        <LinearLayout
             android:visibility="visible"
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-
-            <RadioButton
-                android:id="@+id/main_size_800_rb"
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="800 * 480"/>
-
-            <RadioButton
-                android:id="@+id/main_size_480_rb"
+                android:text="Server IP"
+                />
+            <EditText
+                android:id="@+id/main_server_ip_et"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="480 * 272"/>
+                android:hint="IP"
+                android:text="192.168.49.1"
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Port"
+                />
+            <EditText
+                android:id="@+id/main_server_port_et"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="Port"
+                android:text="2025"
+                />
+        </LinearLayout>
+        <LinearLayout
+            android:visibility="visible"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Socket Mtu"
+                />
+            <EditText
+                android:id="@+id/main_socket_mtu_et"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="max fps"
+                android:text="16"
+                />
+        </LinearLayout>
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="投屏尺寸"
+                />
+            <EditText
+                android:id="@+id/main_size_width_et"
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:text="800"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="*"
+                />
+            <EditText
+                android:id="@+id/main_size_height_et"
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:text="480"/>
+        </LinearLayout>
 
-        </RadioGroup>
         <RadioGroup
             android:visibility="visible"
             android:orientation="horizontal"

@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.PointF;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,11 +27,17 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -52,13 +59,17 @@ import com.baidu.navisdk.adapter.struct.BNRoutePlanInfos;
 import com.sifli.siflicore.log.SFLog;
 import com.sifli.siflicore.util.StringUtil;
 import com.sifli.sifliotasdk.manager.SFTransmissionMode;
+import com.sifli.sifliotasdk.modules.sol2.preview.SFPreviewQRHelper;
+import com.sifli.sifliotasdk.modules.sol2.preview.SFPreviewQRResult;
+import com.sifli.sifliotasdk.modules.sol2.preview.SFPreviewQRWifiResult;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class DemoMainActivity extends Activity {
-
+public class DemoMainActivity extends AppCompatActivity {
+    private final static String TAG = "DemoMainActivity";
     private static final String[] AUTH_BASE_ARR = {
             Manifest.permission.RECORD_AUDIO,
             Manifest.permission.ACCESS_FINE_LOCATION,
@@ -68,7 +79,9 @@ public class DemoMainActivity extends Activity {
             Manifest.permission.BLUETOOTH_ADMIN,
             Manifest.permission.BLUETOOTH_ADVERTISE,
             Manifest.permission.BLUETOOTH_SCAN,
-            Manifest.permission.BLUETOOTH_CONNECT
+            Manifest.permission.BLUETOOTH_CONNECT,
+            Manifest.permission.CAMERA,
+            Manifest.permission.CHANGE_WIFI_STATE,
     };
 
     private static final int AUTH_BASE_REQUEST_CODE = 1;
@@ -93,20 +106,27 @@ public class DemoMainActivity extends Activity {
     private RadioButton comunicateSocketClientRb;
     private EditText ipEt;
     private EditText portEt;
+    private EditText socketMtuEt;
 
     private EditText jpegQualityEt;
     private EditText maxFpsEt;
-    private RadioButton size800_480Rb;
-    private RadioButton size480_272Rb;
+//    private RadioButton size800_480Rb;
+//    private RadioButton size480_272Rb;
+    private EditText widthEt;
+    private EditText heightEt;
     private RadioButton imageModeRb;
     private RadioButton infoModeRb;
     private TextView versionTv;
     private Button logBtn;
+    private ImageButton qrScanBtn;
     private String targetMac;
 
     private BroadcastReceiver mReceiver;
     private int mPageType = BNDemoUtils.NORMAL;
     private BTBondManager bondManager;
+
+    private ActivityResultLauncher<Intent> qrScanlauncher;
+    private SFPreviewQRHelper qrHelper = new SFPreviewQRHelper();
 
     private final Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
@@ -247,15 +267,19 @@ public class DemoMainActivity extends Activity {
         comunicateSocketClientRb = findViewById(R.id.main_comunicate_socket_client_rb);
         ipEt = findViewById(R.id.main_server_ip_et);
         portEt = findViewById(R.id.main_server_port_et);
+        socketMtuEt = findViewById(R.id.main_socket_mtu_et);
 
         jpegQualityEt = findViewById(R.id.main_jpeg_quality_et);
         maxFpsEt = findViewById(R.id.main_max_fps_et);
-        size800_480Rb = findViewById(R.id.main_size_800_rb);
-        size480_272Rb = findViewById(R.id.main_size_480_rb);
+//        size800_480Rb = findViewById(R.id.main_size_800_rb);
+//        size480_272Rb = findViewById(R.id.main_size_480_rb);
+        widthEt = findViewById(R.id.main_size_width_et);
+        heightEt = findViewById(R.id.main_size_height_et);
         imageModeRb = findViewById(R.id.main_mode_image_rb);
         infoModeRb = findViewById(R.id.main_mode_info_rb);
         versionTv = findViewById(R.id.main_version_tv);
         versionTv.setText(getVersionName(this));
+        qrScanBtn = findViewById(R.id.main_qr_scan_ib);
 
         RecyclerView recyclerView = findViewById(R.id.navi_setting_page_item_recycle);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
@@ -524,6 +548,12 @@ public class DemoMainActivity extends Activity {
                 onLogBtnTouch();
             }
         });
+        qrScanBtn.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onQrScanBtnTouch();
+            }
+        });
 //        useSocketCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 //            @Override
 //            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -531,6 +561,21 @@ public class DemoMainActivity extends Activity {
 //                SFNaviOption.getInstance().setUseSocket(isChecked);
 //            }
 //        });
+        this.createQRScanLauncher();
+    }
+
+    private void createQRScanLauncher() {
+        this.qrScanlauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+            @Override
+            public void onActivityResult(ActivityResult result) {
+                Intent data = result.getData();
+                int resultCode = result.getResultCode();
+                if (resultCode == RESULT_OK) {
+                    String qrStr = data.getStringExtra(QRScanActivity.QR_RESULT_EXTRA_KEY);
+                    onQrResult(qrStr);
+                }
+            }
+        });
     }
     public static HashMap<IBNOuterSettingParams.BNavSettingItem, Boolean> mSdkFunc = new HashMap<>();
     private void initNaviViewFunc() {
@@ -631,6 +676,10 @@ public class DemoMainActivity extends Activity {
         startActivity(new Intent(this, LogsActivity.class));
     }
 
+    private void onQrScanBtnTouch(){
+        this.qrScanlauncher.launch(new Intent(DemoMainActivity.this, QRScanActivity.class));
+    }
+
     private void applySetting(){
         SFLog.i("MAIN","applySetting");
         SFNaviOption option = SFNaviOption.getInstance();
@@ -638,8 +687,10 @@ public class DemoMainActivity extends Activity {
         String jpegQualityTxt = this.jpegQualityEt.getText().toString();
         String ipTxt = this.ipEt.getText().toString();
         String portTxt = this.portEt.getText().toString();
-        boolean isSize800 = this.size800_480Rb.isChecked();
-        boolean isSize480 = this.size480_272Rb.isChecked();
+        String widthTxt = this.widthEt.getText().toString();
+        String heightText = this.heightEt.getText().toString();
+        String socketMtuTxt = this.socketMtuEt.getText().toString();
+
         int transMode = SFTransmissionMode.TRANSMISSION_MODE_SPP;
         if(this.comunicateBleRb.isChecked())transMode = SFTransmissionMode.TRANSMISSION_MODE_BLE;
         if(this.comunicateSppRb.isChecked())transMode = SFTransmissionMode.TRANSMISSION_MODE_SPP;
@@ -653,14 +704,15 @@ public class DemoMainActivity extends Activity {
         float jpegQuality = 0.2f;
         int width = 800;
         int height = 480;
-        if(isSize480){
-            width = 480;
-            height = 272;
-        }
+        int socketMtu = 16;
+
         try{
+            width = Integer.parseInt(widthTxt);
+            height = Integer.parseInt(heightText);
             maxFps = Integer.parseInt(maxFpsTxt);
             jpegQuality = Float.parseFloat(jpegQualityTxt);
             port = Integer.parseInt(portTxt);
+            socketMtu = Integer.parseInt(socketMtuTxt);
         }catch (Exception e){
             SFLog.e("MAIN","applySetting error %s",e);
         }
@@ -674,6 +726,7 @@ public class DemoMainActivity extends Activity {
         option.setNavMode(mode);
         option.setServerIP(ipTxt);
         option.setServerPort(port);
+        option.setSocketMtu(socketMtu);
     }
 
     private boolean validateSppIsBond(){
@@ -690,16 +743,152 @@ public class DemoMainActivity extends Activity {
         Toast.makeText(DemoMainActivity.this, msg, Toast.LENGTH_SHORT).show();
     }
 
+    private void onQrResult(String qrText){
+        SFLog.i(TAG,"onQrResult:%s",qrText);
+        this.clearMac();
+        int transMode = SFTransmissionMode.TRANSMISSION_MODE_SPP;
+        if(this.comunicateBleRb.isChecked())transMode = SFTransmissionMode.TRANSMISSION_MODE_BLE;
+        if(this.comunicateSppRb.isChecked())transMode = SFTransmissionMode.TRANSMISSION_MODE_SPP;
+        if(this.comunicateSocketServerRb.isChecked())transMode = SFTransmissionMode.TRANSMISSION_MODE_SOCKET_SERVER;
+        if(this.comunicateSocketClientRb.isChecked())transMode = SFTransmissionMode.TRANSMISSION_MODE_SOCKET_CLIENT;
+
+        int mode = this.imageModeRb.isChecked() ? SFNaviOption.NAV_MODE_IMAGE : SFNaviOption.NAV_MODE_INFO;
+
+        String maxFpsTxt = this.maxFpsEt.getText().toString();
+        String jpegQualityTxt = this.jpegQualityEt.getText().toString();
+        String ipTxt = this.ipEt.getText().toString();
+        String portTxt = this.portEt.getText().toString();
+        String widthTxt = this.widthEt.getText().toString();
+        String heightText = this.heightEt.getText().toString();
+        String mac = null;
+
+        int port = 2025;
+        int maxFps = 20;
+        float jpegQuality = 0.2f;
+        int width = 800;
+        int height = 480;
+
+        try{
+            width = Integer.parseInt(widthTxt);
+            height = Integer.parseInt(heightText);
+            maxFps = Integer.parseInt(maxFpsTxt);
+            jpegQuality = Float.parseFloat(jpegQualityTxt);
+            port = Integer.parseInt(portTxt);
+        }catch (Exception e){
+            SFLog.e("MAIN","applySetting error %s",e);
+        }
+
+        PointF sizepf = new PointF(width,height);
+
+        SFPreviewQRResult qrResult = this.qrHelper.analyzeQRText(qrText);
+        if(qrResult == null){
+            SFLog.e(TAG,"onQrResult qrResult is null");
+            return;
+        }
+        SFLog.i(TAG,"onQrResult:%s",qrResult);
+
+        SFPreviewQRWifiResult wifiResult = qrResult.getWifiInfo();
+        if(wifiResult != null){
+
+        }
+
+        Map<String,String> dict = qrResult.getAllCustomInfo();
+        if(dict.containsKey(SFPreviewQRResult.KEY_TRANS_TYPE)){
+           int transTypeMask = this.qrHelper.makeTransTypeWithText(dict.get(SFPreviewQRResult.KEY_TRANS_TYPE));
+           if(this.qrHelper.containTransType(transTypeMask,SFPreviewQRResult.TRANS_TYPE_SPP)){
+               transMode = SFTransmissionMode.TRANSMISSION_MODE_BLE;
+           }else if(this.qrHelper.containTransType(transTypeMask,SFPreviewQRResult.TRANS_TYPE_BLE)){
+               transMode = SFTransmissionMode.TRANSMISSION_MODE_BLE;
+           }else if(this.qrHelper.containTransType(transTypeMask,SFPreviewQRResult.TRANS_TYPE_WIFI)){
+               transMode = SFTransmissionMode.TRANSMISSION_MODE_SOCKET_CLIENT;
+               this.socketMtuEt.setText("16");
+           }else if(this.qrHelper.containTransType(transTypeMask,SFPreviewQRResult.TRANS_TYPE_PAN)){
+               transMode = SFTransmissionMode.TRANSMISSION_MODE_SOCKET_CLIENT;
+               this.socketMtuEt.setText("1");
+           }
+        }
+
+        if(dict.containsKey(SFPreviewQRResult.KEY_QUALITY)){
+            jpegQuality = this.qrHelper.makeQualityWithText(dict.get(SFPreviewQRResult.KEY_QUALITY),jpegQuality);
+        }
+        if(dict.containsKey(SFPreviewQRResult.KEY_IP)){
+            String text = this.qrHelper.makeIPAddressWithText(dict.get(SFPreviewQRResult.KEY_IP));
+            if(text != null)ipTxt = text;
+        }
+        if(dict.containsKey(SFPreviewQRResult.KEY_PORT)){
+            port = this.qrHelper.makePortWithText(dict.get(SFPreviewQRResult.KEY_PORT),port);
+        }
+        if(dict.containsKey(SFPreviewQRResult.KEY_SIZE)){
+            sizepf = this.qrHelper.makeSizeWithText(dict.get(SFPreviewQRResult.KEY_SIZE),sizepf);
+            width = (int)sizepf.x;
+            height = (int)sizepf.y;
+        }
+        if(dict.containsKey(SFPreviewQRResult.KEY_MAC)){
+            mac = this.qrHelper.makeMacAddressWithText(dict.get(SFPreviewQRResult.KEY_MAC));
+        }
+        if(dict.containsKey(SFPreviewQRResult.KEY_TYPE)){
+            int contentMode = this.qrHelper.makeTypeWithText(dict.get(SFPreviewQRResult.KEY_TYPE),SFPreviewQRResult.CONTENT_TYPE_MAP);
+            if(contentMode == SFPreviewQRResult.CONTENT_TYPE_MAP){
+                mode = SFNaviOption.NAV_MODE_IMAGE;
+            }else if(contentMode == SFPreviewQRResult.CONTENT_TYPE_INFO){
+                mode = SFNaviOption.NAV_MODE_INFO;
+            }
+        }
+
+        this.selectComunicateRb(transMode);
+        this.selectContentMode(mode);
+        this.jpegQualityEt.setText(jpegQuality + "");
+        this.ipEt.setText(ipTxt);
+        this.portEt.setText(port + "");
+        this.widthEt.setText(width + "");
+        this.heightEt.setText(height + "");
+
+        if(mac != null){
+            this.applyMac(mac);
+        }
+
+    }
+
+    private void selectComunicateRb(int transMode) {
+        if (transMode == SFTransmissionMode.TRANSMISSION_MODE_BLE) {
+            this.comunicateBleRb.setChecked(true);
+        } else if (transMode == SFTransmissionMode.TRANSMISSION_MODE_SPP) {
+            this.comunicateSppRb.setChecked(true);
+        } else if (transMode == SFTransmissionMode.TRANSMISSION_MODE_SOCKET_SERVER) {
+            this.comunicateSocketServerRb.setChecked(true);
+        } else if (transMode == SFTransmissionMode.TRANSMISSION_MODE_SOCKET_CLIENT) {
+            this.comunicateSocketClientRb.setChecked(true);
+        }
+    }
+
+    private void selectContentMode(int mode){
+        if(mode == SFNaviOption.NAV_MODE_IMAGE){
+            this.imageModeRb.setChecked(true);
+        }else if(mode == SFNaviOption.NAV_MODE_INFO){
+            this.infoModeRb.setChecked(true);
+        }
+    }
+
+    private void applyMac(String mac){
+        this.targetMac = mac;
+        this.searchDeviceBtn.setText("搜索蓝牙 " + targetMac);
+        boolean isBond = this.bondManager.isBond(this.targetMac);
+        if(!isBond)this.bondManager.createBondByMac(this.targetMac);
+    }
+
+    private void clearMac(){
+        this.targetMac = null;
+        this.searchDeviceBtn.setText("搜索蓝牙");
+    }
+
    @Override
    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
        super.onActivityResult(requestCode, resultCode, data);
        if(requestCode == REQUEST_CODE_SEARCH_DEVICE){
            if(resultCode == Activity.RESULT_OK){
-               this.targetMac = data.getStringExtra(DeviceScanActivity.EXTRA_BLE_DEVICE);
-               this.searchDeviceBtn.setText("搜索蓝牙 " + targetMac);
-               boolean isBond = this.bondManager.isBond(this.targetMac);
-               if(!isBond)this.bondManager.createBondByMac(this.targetMac);
+               String mac = data.getStringExtra(DeviceScanActivity.EXTRA_BLE_DEVICE);
+               applyMac(mac);
            }
        }
     }
