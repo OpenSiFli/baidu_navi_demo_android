@@ -1334,7 +1334,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewI
             this.videoManager.startPreviewVideo(config,targetMac);
         }else if(this.transMode == SFTransmissionMode.TRANSMISSION_MODE_SOCKET_SERVER){
             //todo 改进sdk的入口命名为startPreviewVideoAsSocketServer.
-            this.videoManager.startPreviewVideo(config,targetMac);
+            this.videoManager.startPreviewVideoAsSocketServer(config);
         }
 
 //        this.videoManager.startPreviewVideo(config,"BB:00:00:AB:00:19");

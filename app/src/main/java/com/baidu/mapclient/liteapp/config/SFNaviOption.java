@@ -14,6 +14,7 @@ public class SFNaviOption {
     private String serverIP;
     private int serverPort;
     private int socketMtu;
+    private String wifiSSID;
 
 
     private  static SFNaviOption _instance;
@@ -102,5 +103,13 @@ public class SFNaviOption {
 
     public void setSocketMtu(int socketMtu) {
         this.socketMtu = socketMtu;
+    }
+
+    public String getWifiSSID() {
+        return wifiSSID;
+    }
+
+    public void setWifiSSID(String wifiSSID) {
+        this.wifiSSID = wifiSSID;
     }
 }

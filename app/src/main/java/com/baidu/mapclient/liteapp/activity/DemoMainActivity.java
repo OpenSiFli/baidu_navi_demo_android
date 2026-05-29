@@ -56,19 +56,23 @@ import com.baidu.navisdk.adapter.IBNOuterSettingManager;
 import com.baidu.navisdk.adapter.IBNOuterSettingParams;
 import com.baidu.navisdk.adapter.IBNRoutePlanManager;
 import com.baidu.navisdk.adapter.struct.BNRoutePlanInfos;
+import com.sifli.siflicore.error.SFError;
 import com.sifli.siflicore.log.SFLog;
+import com.sifli.siflicore.p2p.SFWifiP2PCallback;
+import com.sifli.siflicore.p2p.SFWifiP2PManager;
 import com.sifli.siflicore.util.StringUtil;
 import com.sifli.sifliotasdk.manager.SFTransmissionMode;
 import com.sifli.sifliotasdk.modules.sol2.preview.SFPreviewQRHelper;
 import com.sifli.sifliotasdk.modules.sol2.preview.SFPreviewQRResult;
 import com.sifli.sifliotasdk.modules.sol2.preview.SFPreviewQRWifiResult;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DemoMainActivity extends AppCompatActivity {
+public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCallback {
     private final static String TAG = "DemoMainActivity";
     private static final String[] AUTH_BASE_ARR = {
             Manifest.permission.RECORD_AUDIO,
@@ -127,6 +131,8 @@ public class DemoMainActivity extends AppCompatActivity {
 
     private ActivityResultLauncher<Intent> qrScanlauncher;
     private SFPreviewQRHelper qrHelper = new SFPreviewQRHelper();
+    private SFWifiP2PManager p2PManager;
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     private final Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
@@ -204,6 +210,9 @@ public class DemoMainActivity extends AppCompatActivity {
 
         initBroadCastReceiver();
         this.bondManager = new BTBondManager(this.getApplicationContext());
+        this.p2PManager = new SFWifiP2PManager(this.getApplicationContext());
+        this.p2PManager.registerReceiver();
+        this.p2PManager.setCallback(this);
     }
 
     private void initBroadCastReceiver() {
@@ -761,6 +770,8 @@ public class DemoMainActivity extends AppCompatActivity {
         String widthTxt = this.widthEt.getText().toString();
         String heightText = this.heightEt.getText().toString();
         String mac = null;
+        String p2pSSID = null;
+        boolean isWifi = false;
 
         int port = 2025;
         int maxFps = 20;
@@ -789,19 +800,20 @@ public class DemoMainActivity extends AppCompatActivity {
 
         SFPreviewQRWifiResult wifiResult = qrResult.getWifiInfo();
         if(wifiResult != null){
-
+            p2pSSID = wifiResult.getSSID();
         }
 
         Map<String,String> dict = qrResult.getAllCustomInfo();
         if(dict.containsKey(SFPreviewQRResult.KEY_TRANS_TYPE)){
            int transTypeMask = this.qrHelper.makeTransTypeWithText(dict.get(SFPreviewQRResult.KEY_TRANS_TYPE));
            if(this.qrHelper.containTransType(transTypeMask,SFPreviewQRResult.TRANS_TYPE_SPP)){
-               transMode = SFTransmissionMode.TRANSMISSION_MODE_BLE;
+               transMode = SFTransmissionMode.TRANSMISSION_MODE_SPP;
            }else if(this.qrHelper.containTransType(transTypeMask,SFPreviewQRResult.TRANS_TYPE_BLE)){
                transMode = SFTransmissionMode.TRANSMISSION_MODE_BLE;
            }else if(this.qrHelper.containTransType(transTypeMask,SFPreviewQRResult.TRANS_TYPE_WIFI)){
                transMode = SFTransmissionMode.TRANSMISSION_MODE_SOCKET_CLIENT;
                this.socketMtuEt.setText("16");
+               isWifi = true;
            }else if(this.qrHelper.containTransType(transTypeMask,SFPreviewQRResult.TRANS_TYPE_PAN)){
                transMode = SFTransmissionMode.TRANSMISSION_MODE_SOCKET_CLIENT;
                this.socketMtuEt.setText("1");
@@ -844,9 +856,27 @@ public class DemoMainActivity extends AppCompatActivity {
         this.heightEt.setText(height + "");
 
         if(mac != null){
-            this.applyMac(mac);
+            this.applyMac(mac,transMode == SFTransmissionMode.TRANSMISSION_MODE_SPP);
         }
 
+        if(isWifi && !StringUtil.isNullOrEmpty(p2pSSID)){
+
+            SFLog.i(TAG,"disconnect it first...");
+            this.p2PManager.disconnect();
+            final  String finalSSID = p2pSSID;
+            this.mainHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    connectP2P(finalSSID);
+                }
+            },2000);
+        }
+
+    }
+
+    private  void connectP2P(String ssid){
+        SFLog.i(TAG,"connectP2P... %s",ssid);
+        this.p2PManager.connectToSsid(ssid);
     }
 
     private void selectComunicateRb(int transMode) {
@@ -869,11 +899,14 @@ public class DemoMainActivity extends AppCompatActivity {
         }
     }
 
-    private void applyMac(String mac){
+    private void applyMac(String mac,boolean needBond){
         this.targetMac = mac;
         this.searchDeviceBtn.setText("搜索蓝牙 " + targetMac);
-        boolean isBond = this.bondManager.isBond(this.targetMac);
-        if(!isBond)this.bondManager.createBondByMac(this.targetMac);
+        if(needBond){
+            boolean isBond = this.bondManager.isBond(this.targetMac);
+            if(!isBond)this.bondManager.createBondByMac(this.targetMac);
+        }
+
     }
 
     private void clearMac(){
@@ -888,9 +921,26 @@ public class DemoMainActivity extends AppCompatActivity {
        if(requestCode == REQUEST_CODE_SEARCH_DEVICE){
            if(resultCode == Activity.RESULT_OK){
                String mac = data.getStringExtra(DeviceScanActivity.EXTRA_BLE_DEVICE);
-               applyMac(mac);
+               applyMac(mac,true);
            }
        }
     }
 
+    // region SFWifiP2PCallback
+    @Override
+    public void onConnected(InetAddress inetAddress, boolean isGroupOwner, int port) {
+        SFLog.i(TAG,"P2P onConnected %s,port %d",inetAddress.getHostAddress(),port);
+        if(!isGroupOwner){
+            this.ipEt.setText(inetAddress.getHostAddress());
+            this.portEt.setText(port + "");
+        }
+        toast("WIFI P2P is Connected");
+    }
+
+    @Override
+    public void onConnectionFailed(SFError sfError) {
+        SFLog.e(TAG,"onConnectionFailed %s",sfError);
+        this.toast(sfError.toString());
+    }
+    //endregion
 }
