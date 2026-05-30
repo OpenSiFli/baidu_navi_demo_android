@@ -48,6 +48,7 @@ import com.baidu.mapclient.liteapp.R;
 import com.baidu.mapclient.liteapp.config.SFNaviOption;
 import com.baidu.mapclient.liteapp.devicescan.DeviceScanActivity;
 import com.baidu.mapclient.liteapp.util.BTBondManager;
+import com.baidu.mapclient.liteapp.util.ProgressHUDHelper;
 import com.baidu.navisdk.adapter.BNRoutePlanNode;
 import com.baidu.navisdk.adapter.BNaviCommonParams;
 import com.baidu.navisdk.adapter.BaiduNaviManagerFactory;
@@ -135,6 +136,7 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private boolean isAutoStart = false;
     private int qrTransMode = -1;
+    private String qrWifiSSID = null;
 
     private final Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
@@ -766,6 +768,7 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
 
     private void onQrResult(String qrText){
         SFLog.i(TAG,"onQrResult:%s",qrText);
+        this.qrWifiSSID = null;
         this.clearMac();
         int transMode = SFTransmissionMode.TRANSMISSION_MODE_SPP;
         if(this.comunicateBleRb.isChecked())transMode = SFTransmissionMode.TRANSMISSION_MODE_BLE;
@@ -877,23 +880,24 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
                 onAnalogBtnTouch(true);
             }
         }
-
+        this.qrWifiSSID = p2pSSID;
         if(isWifi && !StringUtil.isNullOrEmpty(p2pSSID)){
-
+            ProgressHUDHelper.show(this,"disconnect P2P..");
             SFLog.i(TAG,"disconnect it first...");
             this.p2PManager.disconnect();
-            final  String finalSSID = p2pSSID;
-            this.mainHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    connectP2P(finalSSID);
-                }
-            },2000);
+//            final  String finalSSID = p2pSSID;
+//            this.mainHandler.postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                    connectP2P(finalSSID);
+//                }
+//            },1000);
         }
 
     }
 
     private  void connectP2P(String ssid){
+        ProgressHUDHelper.updateMessage("connect P2P...");
         SFLog.i(TAG,"connectP2P... %s",ssid);
         this.p2PManager.connectToSsid(ssid);
     }
@@ -949,6 +953,7 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
     @Override
     public void onConnected(InetAddress inetAddress, boolean isGroupOwner, int port) {
         SFLog.i(TAG,"P2P onConnected %s,port %d",inetAddress.getHostAddress(),port);
+        ProgressHUDHelper.dismiss();
         if(!isGroupOwner){
             mainHandler.post(new Runnable() {
                 @Override
@@ -967,7 +972,15 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
     @Override
     public void onConnectionFailed(SFError sfError) {
         SFLog.e(TAG,"onConnectionFailed %s",sfError);
+        ProgressHUDHelper.dismiss();
         this.toast(sfError.toString());
+    }
+
+    @Override
+    public void onDisconnectComplete() {
+        SFLog.e(TAG,"onDisconnectComplete");
+        if(qrWifiSSID != null)connectP2P(qrWifiSSID);
+
     }
     //endregion
 }
