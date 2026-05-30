@@ -133,6 +133,8 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
     private SFPreviewQRHelper qrHelper = new SFPreviewQRHelper();
     private SFWifiP2PManager p2PManager;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private boolean isAutoStart = false;
+    private int qrTransMode = -1;
 
     private final Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
@@ -164,7 +166,7 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
                             BNDemoUtils.gotoNavi(DemoMainActivity.this,targetMac);
                             break;
                         case BNDemoUtils.ANALOG:
-                            BNDemoUtils.gotoAnalog(DemoMainActivity.this,targetMac);
+                            BNDemoUtils.gotoAnalog(DemoMainActivity.this,targetMac,isAutoStart);
                             break;
                         case BNDemoUtils.EXTGPS:
                             BNDemoUtils.gotoExtGps(DemoMainActivity.this);
@@ -391,22 +393,7 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
             mNaviBtn.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    applySetting();
-                    boolean isBond = validateSppIsBond();
-                    if(!isBond){
-                        toast("请先在设置中对设备配对");
-                        return;
-                    }
-                    if (BaiduNaviManagerFactory.getBaiduNaviManager().isInited()) {
-                        String url = BNDemoFactory.getInstance().getTestEnvironmentUrl(DemoMainActivity.this);
-                        if (url.length() != 0) {
-                            BaiduNaviManagerFactory.getCommonSettingManager().setTestEnvironment(true, url);
-                        } else {
-                            BaiduNaviManagerFactory.getCommonSettingManager().setTestEnvironment(false, url);
-                        }
-                        mPageType = BNDemoUtils.NORMAL;
-                        routePlanToNavi(null);
-                    }
+                    onNaviBtnTouch(false);
                 }
             });
         }
@@ -457,19 +444,7 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
             mAnalogBtn.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    applySetting();
-                    boolean isBond = validateSppIsBond();
-                    if(!isBond){
-                        toast("请先在设置中对设备配对");
-                        return;
-                    }
-                    if (BaiduNaviManagerFactory.getBaiduNaviManager().isInited()) {
-                        mPageType = BNDemoUtils.ANALOG;
-                        Bundle bundle = new Bundle();
-                        bundle.putInt(BNaviCommonParams.RoutePlanKey.VEHICLE_TYPE,
-                                IBNRoutePlanManager.Vehicle.CAR);
-                        routePlanToNavi(bundle);
-                    }
+                    onAnalogBtnTouch(false);
                 }
             });
         }
@@ -571,6 +546,43 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
 //            }
 //        });
         this.createQRScanLauncher();
+    }
+
+    private void onNaviBtnTouch(boolean autoStart){
+        this.isAutoStart = autoStart;
+        applySetting();
+        boolean isBond = validateSppIsBond();
+        if(!isBond){
+            toast("请先在设置中对设备配对");
+            return;
+        }
+        if (BaiduNaviManagerFactory.getBaiduNaviManager().isInited()) {
+            String url = BNDemoFactory.getInstance().getTestEnvironmentUrl(DemoMainActivity.this);
+            if (url.length() != 0) {
+                BaiduNaviManagerFactory.getCommonSettingManager().setTestEnvironment(true, url);
+            } else {
+                BaiduNaviManagerFactory.getCommonSettingManager().setTestEnvironment(false, url);
+            }
+            mPageType = BNDemoUtils.NORMAL;
+            routePlanToNavi(null);
+        }
+    }
+
+    private void onAnalogBtnTouch(boolean autoStart){
+        this.isAutoStart = autoStart;
+        applySetting();
+        boolean isBond = validateSppIsBond();
+        if(!isBond){
+            toast("请先在设置中对设备配对");
+            return;
+        }
+        if (BaiduNaviManagerFactory.getBaiduNaviManager().isInited()) {
+            mPageType = BNDemoUtils.ANALOG;
+            Bundle bundle = new Bundle();
+            bundle.putInt(BNaviCommonParams.RoutePlanKey.VEHICLE_TYPE,
+                    IBNRoutePlanManager.Vehicle.CAR);
+            routePlanToNavi(bundle);
+        }
     }
 
     private void createQRScanLauncher() {
@@ -819,7 +831,7 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
                this.socketMtuEt.setText("1");
            }
         }
-
+        this.qrTransMode = transMode;
         if(dict.containsKey(SFPreviewQRResult.KEY_QUALITY)){
             jpegQuality = this.qrHelper.makeQualityWithText(dict.get(SFPreviewQRResult.KEY_QUALITY),jpegQuality);
         }
@@ -856,7 +868,14 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
         this.heightEt.setText(height + "");
 
         if(mac != null){
+            boolean isBond = this.bondManager.isBond(mac);
             this.applyMac(mac,transMode == SFTransmissionMode.TRANSMISSION_MODE_SPP);
+            //已经配对的情况下直接发起投屏
+            if(transMode ==SFTransmissionMode.TRANSMISSION_MODE_SPP){
+                if(isBond)onAnalogBtnTouch(true);
+            }else if(transMode == SFTransmissionMode.TRANSMISSION_MODE_BLE){
+                onAnalogBtnTouch(true);
+            }
         }
 
         if(isWifi && !StringUtil.isNullOrEmpty(p2pSSID)){
@@ -931,10 +950,18 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
     public void onConnected(InetAddress inetAddress, boolean isGroupOwner, int port) {
         SFLog.i(TAG,"P2P onConnected %s,port %d",inetAddress.getHostAddress(),port);
         if(!isGroupOwner){
-            this.ipEt.setText(inetAddress.getHostAddress());
-            this.portEt.setText(port + "");
+            mainHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    ipEt.setText(inetAddress.getHostAddress());
+                    portEt.setText(port + "");
+                    if(qrTransMode == SFTransmissionMode.TRANSMISSION_MODE_SOCKET_CLIENT)onAnalogBtnTouch(true);
+                }
+            });
+
         }
         toast("WIFI P2P is Connected");
+
     }
 
     @Override

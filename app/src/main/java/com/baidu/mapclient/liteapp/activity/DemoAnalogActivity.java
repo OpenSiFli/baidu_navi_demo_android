@@ -32,6 +32,7 @@ import com.baidu.navisdk.adapter.IBNRouteGuideManager;
 import com.baidu.navisdk.adapter.IBNaviListener;
 import com.baidu.navisdk.adapter.struct.BNGuideConfig;
 import com.sifli.siflicore.error.SFError;
+import com.sifli.siflicore.log.SFLog;
 import com.sifli.sifliotasdk.manager.ISFPreviewVideoManagerCallback;
 import com.sifli.sifliotasdk.manager.SFPreviewVideoConfiguration;
 import com.sifli.sifliotasdk.manager.SFPreviewVideoManager;
@@ -47,6 +48,7 @@ public class DemoAnalogActivity extends FragmentActivity  {
     private static final String TAG = DemoAnalogActivity.class.getName();
     public final static String EXTRA_BLE_DEVICE = "EXTRA_BLE_DEVICE";
     public final static String EXTRA_IS_REAL_NAV = "EXTRA_IS_REAL_NAV";
+    public final static String EXTRA_AUTO_START = "EXTRA_AUTO_START";
     private IBNRouteGuideManager mRouteGuideManager;
 
     private IBNaviListener.DayNightMode mMode = IBNaviListener.DayNightMode.DAY;
@@ -60,6 +62,7 @@ public class DemoAnalogActivity extends FragmentActivity  {
     private FrameLayout mapContainer = null;
     public MiniMapViewController miniMapViewController = new MiniMapViewController();
     private boolean isRealNavi = false;
+    private boolean isAutoStart = false;
     private Button resumeBtn;
     private Button pauseBtn;
     private Button voiceModeBtn;
@@ -68,7 +71,7 @@ public class DemoAnalogActivity extends FragmentActivity  {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_analog);
-
+        SFLog.i(TAG,"onCreate");
         // 模拟导航ui自定义,隐藏导航自带的退出、速度、开始/暂停按钮。
         BaiduNaviManagerFactory.getProfessionalNaviSettingManager()
                 .setAnalogQuitButtonVisible(false);
@@ -78,6 +81,7 @@ public class DemoAnalogActivity extends FragmentActivity  {
                 .setAnalogSwitchButtonVisible(false);
 
         isRealNavi = getIntent().getBooleanExtra(EXTRA_IS_REAL_NAV,false);
+        isAutoStart = getIntent().getBooleanExtra(EXTRA_AUTO_START,false);
         Bundle params = new Bundle();
         params.putBoolean(BNaviCommonParams.ProGuideKey.IS_REALNAVI, isRealNavi);
         params.putBoolean(BNaviCommonParams.ProGuideKey.IS_SUPPORT_FULL_SCREEN,
@@ -94,6 +98,28 @@ public class DemoAnalogActivity extends FragmentActivity  {
         mapContainer = layout;
         initListener();
         iniPreviewNav();
+        doAutoStart();
+    }
+
+    private void doAutoStart(){
+        if(isAutoStart){
+            this.mainHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    openMiniMap();
+                    autoStartPreview();
+                }
+            },500);
+        }
+    }
+
+    private  void autoStartPreview(){
+        this.mainHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                miniMapViewController.autoStart();
+            }
+        },500);
     }
 
     private void initListener() {
@@ -265,9 +291,7 @@ public class DemoAnalogActivity extends FragmentActivity  {
                 previewBtn.setText("开始预览");
             }
         }else if(R.id.analog_open_mini_btn == view.getId()){
-            BNDemoUtils.setBoolean(DemoAnalogActivity.this,
-                    BNDemoUtils.KEY_GB_MINI_MAP_TYPE, true);
-            initMiniMapView();
+            openMiniMap();
         }else if (R.id.analog_start_hide_mini_btn == view.getId()){
             this.miniMapViewController.showOrHide();
         }else if(R.id.analog_start_voice_mode_btn == view.getId()){
@@ -277,6 +301,12 @@ public class DemoAnalogActivity extends FragmentActivity  {
             String text = playOnPhone ? "手机播报" : "车机播报";
             this.voiceModeBtn.setText(text);
         }
+    }
+
+    private void openMiniMap(){
+        BNDemoUtils.setBoolean(DemoAnalogActivity.this,
+                BNDemoUtils.KEY_GB_MINI_MAP_TYPE, true);
+        initMiniMapView();
     }
 
 //    private void  cycleImage(){

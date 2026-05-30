@@ -85,10 +85,11 @@ public class BNDemoUtils {
         activity.startActivity(it);
     }
 
-    public static void gotoAnalog(Activity activity,String targetMac) {
+    public static void gotoAnalog(Activity activity,String targetMac,boolean isAutoStart) {
         Intent intent = new Intent(activity, DemoAnalogActivity.class);
         if(targetMac != null) intent.putExtra(DemoAnalogActivity.EXTRA_BLE_DEVICE, targetMac);
         intent.putExtra(DemoAnalogActivity.EXTRA_IS_REAL_NAV,false);
+        intent.putExtra(DemoAnalogActivity.EXTRA_AUTO_START,isAutoStart);
         activity.startActivity(intent);
     }
 

@@ -216,16 +216,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewI
 //                }
 //                isPause = !isPause;
 
-                isPreview = !isPreview;
-
-                if (isPreview) {
-//                    startPreview();
-                    onStartPreviewBtnTouch();
-                    bgButton.setText("停止预览");
-                } else {
-                   stopPreview();
-                    bgButton.setText("开始预览");
-                }
+                 onPreviewBtnClick();
 //                saveBitmapToFile(getMapViewBitmap(), System.currentTimeMillis() + ".png");
             }
         });
@@ -468,6 +459,11 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewI
                 visibility = View.VISIBLE;
             }
             mRootView.setVisibility(visibility);
+    }
+
+    public void autoStart(){
+        SFLog.i(TAG,"autoStart");
+       this.onPreviewBtnClick();
     }
 
 
@@ -1291,6 +1287,18 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewI
         this.navInfo.setTurnIconWasSent();
     }
 
+    private void onPreviewBtnClick(){
+        isPreview = !isPreview;
+
+        if (isPreview) {
+//                    startPreview();
+            onStartPreviewBtnTouch();
+            bgButton.setText("停止预览");
+        } else {
+            stopPreview();
+            bgButton.setText("开始预览");
+        }
+    }
     private void onStartPreviewBtnTouch(){
         SFLog.i(TAG,"onStartPreviewBtnTouch trans mode=%d",this.transMode);
         int socketMtu = SFNaviOption.getInstance().getSocketMtu();
