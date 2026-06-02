@@ -137,6 +137,7 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
     private boolean isAutoStart = false;
     private int qrTransMode = -1;
     private String qrWifiSSID = null;
+    private int p2pTryCount = 0;
 
     private final Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
@@ -769,6 +770,7 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
     private void onQrResult(String qrText){
         SFLog.i(TAG,"onQrResult:%s",qrText);
         this.qrWifiSSID = null;
+        this.p2pTryCount = 0;
         this.clearMac();
         int transMode = SFTransmissionMode.TRANSMISSION_MODE_SPP;
         if(this.comunicateBleRb.isChecked())transMode = SFTransmissionMode.TRANSMISSION_MODE_BLE;
@@ -787,6 +789,7 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
         String mac = null;
         String p2pSSID = null;
         boolean isWifi = false;
+        boolean isPan = false;
 
         int port = 2025;
         int maxFps = 20;
@@ -832,6 +835,7 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
            }else if(this.qrHelper.containTransType(transTypeMask,SFPreviewQRResult.TRANS_TYPE_PAN)){
                transMode = SFTransmissionMode.TRANSMISSION_MODE_SOCKET_CLIENT;
                this.socketMtuEt.setText("1");
+               isPan = true;
            }
         }
         this.qrTransMode = transMode;
@@ -892,6 +896,10 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
 //                    connectP2P(finalSSID);
 //                }
 //            },1000);
+        }
+
+        if(isPan){
+            onAnalogBtnTouch(true);
         }
 
     }
@@ -974,6 +982,18 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
         SFLog.e(TAG,"onConnectionFailed %s",sfError);
         ProgressHUDHelper.dismiss();
         this.toast(sfError.toString());
+        if(this.p2pTryCount < 2){
+            this.p2pTryCount += 1;
+            mainHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if(qrWifiSSID != null)connectP2P(qrWifiSSID);
+                }
+            },200);
+
+        }else{
+            this.toast("P2P 连接尝试达到最大次数，连接失败");
+        }
     }
 
     @Override
