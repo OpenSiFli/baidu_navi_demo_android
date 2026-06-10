@@ -97,19 +97,19 @@ public class BTBondManager {
         }
 
         try {
-//            Method[] methods = device.getClass().getMethods();
-//            for (Method m:methods) {
-////                Log.i(TAG,"method=" + m.getName());
-//                if(m.getName().equals("createBond") && m.getParameterCount() == 1){
-//                    m.setAccessible(true);
-//                   Object o = m.invoke(device,1);
-//                    SFLog.i(TAG,"createBond success.result =" + o);
-//
-//                    break;
-//                }
-//            }
+            Method[] methods = device.getClass().getMethods();
+            for (Method m:methods) {
+//                Log.i(TAG,"method=" + m.getName());
+                if(m.getName().equals("createBond") && m.getParameterCount() == 1){
+                    m.setAccessible(true);
+                   Object o = m.invoke(device,1);
+                    SFLog.i(TAG,"createBond success.result =" + o);
 
-                device.createBond();
+                    break;
+                }
+            }
+
+//                device.createBond();
         } catch (Exception e) {
             e.printStackTrace();
         }
