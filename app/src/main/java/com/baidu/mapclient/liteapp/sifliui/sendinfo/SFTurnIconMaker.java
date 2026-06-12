@@ -9,7 +9,7 @@ public class SFTurnIconMaker {
     public static byte[] makeTurnIconEZip(Bitmap turnIcon){
         byte[] pngData = getPngData(turnIcon);
         if(pngData == null)return null;
-        return com.sifli.ezip.sifliEzipUtil.pngToEzip(pngData,"rgb565",0,1,1);
+        return com.sifli.ezip.sifliEzipUtil.pngToEzip(pngData,"rgb565",0,1,2);
     }
 
     private static byte[] getPngData(Bitmap turnIcon) {

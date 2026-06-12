@@ -17,8 +17,8 @@ compileSdkVersion 35
         applicationId "com.baidu.mapclient.liteapp"
         minSdkVersion 24
         targetSdkVersion 33
-        versionCode 47
-        versionName "1.2.16"
+        versionCode 48
+        versionName "1.2.19"
 
         multiDexEnabled true
 

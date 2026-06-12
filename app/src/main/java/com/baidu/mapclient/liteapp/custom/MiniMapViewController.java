@@ -66,6 +66,7 @@ import com.sifli.siflicore.error.SFErrorCode;
 import com.sifli.siflicore.image.ISifliImageHelper;
 import com.sifli.siflicore.log.SFLog;
 import com.sifli.siflicore.shell.SFBleShellStatus;
+import com.sifli.siflicore.util.HexUtil;
 import com.sifli.siflicore.util.StringUtil;
 import com.sifli.sifliimagelib.helper.SifliImageHelper;
 import com.sifli.sifliotasdk.manager.ISFPreviewImageManagerCallback;
@@ -1266,6 +1267,9 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewI
                 SFLog.e(TAG,"sendNavInfo turnIconEZip is null");
                 return;
             }
+            String hexezip = HexUtil.encodeHexStr(turnIconEZip);
+            SFLog.i(TAG,"hexezip len=%d",hexezip.length());
+            SFLog.i(TAG,"hexezip:%s",hexezip);
         }
 
 
