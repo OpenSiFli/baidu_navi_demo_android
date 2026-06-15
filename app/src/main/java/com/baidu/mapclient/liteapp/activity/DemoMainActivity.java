@@ -214,7 +214,7 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
         initPermission();
 
         initBroadCastReceiver();
-        this.bondManager = new BTBondManager(this.getApplicationContext());
+        this.bondManager = new BTBondManager(this);
         this.p2PManager = new SFWifiP2PManager(this.getApplicationContext());
         this.p2PManager.registerReceiver();
         this.p2PManager.setCallback(this);
