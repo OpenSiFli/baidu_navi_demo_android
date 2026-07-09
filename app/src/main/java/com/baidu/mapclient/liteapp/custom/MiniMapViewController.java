@@ -473,6 +473,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewI
     public void onResume() {
         if (miniMapViewManager != null) {
             miniMapViewManager.onResume();
+            miniMapViewManager.offset(0,-this.miniHeight/4);
         }
     }
 
