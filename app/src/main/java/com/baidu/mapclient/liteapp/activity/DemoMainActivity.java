@@ -87,6 +87,7 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
             Manifest.permission.BLUETOOTH_CONNECT,
             Manifest.permission.CAMERA,
             Manifest.permission.CHANGE_WIFI_STATE,
+            Manifest.permission.NEARBY_WIFI_DEVICES
     };
 
     private static final int AUTH_BASE_REQUEST_CODE = 1;
@@ -822,8 +823,9 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
         }
 
         Map<String,String> dict = qrResult.getAllCustomInfo();
-        if(dict.containsKey(SFPreviewQRResult.KEY_TRANS_TYPE)){
-           int transTypeMask = this.qrHelper.makeTransTypeWithText(dict.get(SFPreviewQRResult.KEY_TRANS_TYPE));
+        if(qrResult.containTransTypeKey()){
+            String transTypeText = qrResult.transTypeText();
+           int transTypeMask = this.qrHelper.makeTransTypeWithText(transTypeText);
            if(this.qrHelper.containTransType(transTypeMask,SFPreviewQRResult.TRANS_TYPE_SPP)){
                transMode = SFTransmissionMode.TRANSMISSION_MODE_SPP;
            }else if(this.qrHelper.containTransType(transTypeMask,SFPreviewQRResult.TRANS_TYPE_BLE)){
@@ -839,26 +841,30 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
            }
         }
         this.qrTransMode = transMode;
-        if(dict.containsKey(SFPreviewQRResult.KEY_QUALITY)){
-            jpegQuality = this.qrHelper.makeQualityWithText(dict.get(SFPreviewQRResult.KEY_QUALITY),jpegQuality);
+        if(qrResult.containQualityKey()){
+            String qualityText = qrResult.qualityText();
+            jpegQuality = this.qrHelper.makeQualityWithText(qualityText,jpegQuality);
         }
         if(dict.containsKey(SFPreviewQRResult.KEY_IP)){
             String text = this.qrHelper.makeIPAddressWithText(dict.get(SFPreviewQRResult.KEY_IP));
             if(text != null)ipTxt = text;
         }
-        if(dict.containsKey(SFPreviewQRResult.KEY_PORT)){
-            port = this.qrHelper.makePortWithText(dict.get(SFPreviewQRResult.KEY_PORT),port);
+        if(qrResult.containPortKey()){
+            String portText = qrResult.portText();
+            port = this.qrHelper.makePortWithText(portText,port);
         }
-        if(dict.containsKey(SFPreviewQRResult.KEY_SIZE)){
-            sizepf = this.qrHelper.makeSizeWithText(dict.get(SFPreviewQRResult.KEY_SIZE),sizepf);
+        if(qrResult.containSizeKey()){
+            String sizeText = qrResult.sizeText();
+            sizepf = this.qrHelper.makeSizeWithText(sizeText,sizepf);
             width = (int)sizepf.x;
             height = (int)sizepf.y;
         }
         if(dict.containsKey(SFPreviewQRResult.KEY_MAC)){
             mac = this.qrHelper.makeMacAddressWithText(dict.get(SFPreviewQRResult.KEY_MAC));
         }
-        if(dict.containsKey(SFPreviewQRResult.KEY_TYPE)){
-            int contentMode = this.qrHelper.makeTypeWithText(dict.get(SFPreviewQRResult.KEY_TYPE),SFPreviewQRResult.CONTENT_TYPE_MAP);
+        if(qrResult.containTypeKey()){
+            String typeText = qrResult.typeText();
+            int contentMode = this.qrHelper.makeTypeWithText(typeText,SFPreviewQRResult.CONTENT_TYPE_MAP);
             if(contentMode == SFPreviewQRResult.CONTENT_TYPE_MAP){
                 mode = SFNaviOption.NAV_MODE_IMAGE;
             }else if(contentMode == SFPreviewQRResult.CONTENT_TYPE_INFO){
