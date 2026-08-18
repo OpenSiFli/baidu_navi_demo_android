@@ -1,5 +1,7 @@
 package com.baidu.mapclient.liteapp.config;
 
+import android.net.Network;
+
 public class SFNaviOption {
     public final static int NAV_MODE_IMAGE = 1;
     public final static int NAV_MODE_INFO = 2;
@@ -15,6 +17,7 @@ public class SFNaviOption {
     private int serverPort;
     private int socketMtu;
     private String wifiSSID;
+    private Network network;
 
 
     private  static SFNaviOption _instance;
@@ -111,5 +114,13 @@ public class SFNaviOption {
 
     public void setWifiSSID(String wifiSSID) {
         this.wifiSSID = wifiSSID;
+    }
+
+    public Network getNetwork() {
+        return network;
+    }
+
+    public void setNetwork(Network network) {
+        this.network = network;
     }
 }

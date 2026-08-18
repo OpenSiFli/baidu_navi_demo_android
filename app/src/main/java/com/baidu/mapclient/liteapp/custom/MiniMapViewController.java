@@ -8,6 +8,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Network;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
@@ -1327,6 +1328,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewI
         int height = SFNaviOption.getInstance().getHeight();
         int rotation = 0;
         float quality = SFNaviOption.getInstance().getJpegQuality();
+        Network network = SFNaviOption.getInstance().getNetwork();
         int maxFps = SFNaviOption.getInstance().getMaxFPS();
         SFPreviewVideoConfiguration config = new SFPreviewVideoConfiguration();
         config.setPreviewType(SFPreviewVideoConfiguration.PREVIEW_TYPE_IMAGE);
@@ -1342,7 +1344,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewI
         if(this.transMode == SFTransmissionMode.TRANSMISSION_MODE_SOCKET_CLIENT){
             String ip = SFNaviOption.getInstance().getServerIP();
             int port = SFNaviOption.getInstance().getServerPort();
-            this.videoManager.startPreviewVideo(config,ip,port);
+            this.videoManager.startPreviewVideo(config,ip,port,network);
         }else if(this.transMode == SFTransmissionMode.TRANSMISSION_MODE_SPP || this.transMode == SFTransmissionMode.TRANSMISSION_MODE_BLE){
             this.videoManager.startPreviewVideo(config,targetMac);
         }else if(this.transMode == SFTransmissionMode.TRANSMISSION_MODE_SOCKET_SERVER){

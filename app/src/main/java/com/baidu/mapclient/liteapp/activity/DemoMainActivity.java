@@ -12,6 +12,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.PointF;
+import android.net.Network;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -24,8 +25,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RadioButton;
@@ -52,15 +51,16 @@ import com.baidu.mapclient.liteapp.util.ProgressHUDHelper;
 import com.baidu.navisdk.adapter.BNRoutePlanNode;
 import com.baidu.navisdk.adapter.BNaviCommonParams;
 import com.baidu.navisdk.adapter.BaiduNaviManagerFactory;
-import com.baidu.navisdk.adapter.IBNLicenseListener;
 import com.baidu.navisdk.adapter.IBNOuterSettingManager;
 import com.baidu.navisdk.adapter.IBNOuterSettingParams;
 import com.baidu.navisdk.adapter.IBNRoutePlanManager;
 import com.baidu.navisdk.adapter.struct.BNRoutePlanInfos;
 import com.sifli.siflicore.error.SFError;
 import com.sifli.siflicore.log.SFLog;
-import com.sifli.siflicore.p2p.SFWifiP2PCallback;
-import com.sifli.siflicore.p2p.SFWifiP2PManager;
+import com.sifli.siflicore.network.ap.SFWifiConnector;
+import com.sifli.siflicore.network.ap.SFWifiConnectorCallback;
+import com.sifli.siflicore.network.p2p.SFWifiP2PCallback;
+import com.sifli.siflicore.network.p2p.SFWifiP2PManager;
 import com.sifli.siflicore.util.StringUtil;
 import com.sifli.sifliotasdk.manager.SFTransmissionMode;
 import com.sifli.sifliotasdk.modules.sol2.preview.SFPreviewQRHelper;
@@ -73,9 +73,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCallback {
+public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCallback, SFWifiConnectorCallback {
     private final static String TAG = "DemoMainActivity";
-    private static final String[] AUTH_BASE_ARR = {
+    private  String[] AUTH_BASE_ARR = {
             Manifest.permission.RECORD_AUDIO,
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_LOCATION_EXTRA_COMMANDS,
@@ -110,6 +110,9 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
     private RadioButton comunicateSppRb;
     private RadioButton comunicateSocketServerRb;
     private RadioButton comunicateSocketClientRb;
+
+    private RadioButton p2pRb;
+    private RadioButton apRb;
     private EditText ipEt;
     private EditText portEt;
     private EditText socketMtuEt;
@@ -134,6 +137,7 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
     private ActivityResultLauncher<Intent> qrScanlauncher;
     private SFPreviewQRHelper qrHelper = new SFPreviewQRHelper();
     private SFWifiP2PManager p2PManager;
+    private SFWifiConnector apConnector;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private boolean isAutoStart = false;
     private int qrTransMode = -1;
@@ -219,6 +223,9 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
         this.p2PManager = new SFWifiP2PManager(this.getApplicationContext());
         this.p2PManager.registerReceiver();
         this.p2PManager.setCallback(this);
+
+        this.apConnector = new SFWifiConnector(this);
+        this.apConnector.setCallback(this);
     }
 
     private void initBroadCastReceiver() {
@@ -246,6 +253,46 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
     }
 
     private void initPermission() {
+        //
+//        String[] AUTH_BASE_ARR1 = {
+//                Manifest.permission.RECORD_AUDIO,
+//                Manifest.permission.ACCESS_FINE_LOCATION,
+//                Manifest.permission.ACCESS_LOCATION_EXTRA_COMMANDS,
+//                // 室内导航必要权限
+//                Manifest.permission.BLUETOOTH,
+//                Manifest.permission.BLUETOOTH_ADMIN,
+//                Manifest.permission.BLUETOOTH_ADVERTISE,
+//                Manifest.permission.BLUETOOTH_SCAN,
+//                Manifest.permission.BLUETOOTH_CONNECT,
+//                Manifest.permission.CAMERA,
+//                Manifest.permission.CHANGE_WIFI_STATE,
+//                Manifest.permission.NEARBY_WIFI_DEVICES
+//        };
+
+        ArrayList<String> permissionsToRequest = new ArrayList<String>();
+        permissionsToRequest.add(Manifest.permission.RECORD_AUDIO);
+        permissionsToRequest.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        permissionsToRequest.add(Manifest.permission.ACCESS_LOCATION_EXTRA_COMMANDS);
+
+        permissionsToRequest.add(Manifest.permission.BLUETOOTH);
+        permissionsToRequest.add(Manifest.permission.BLUETOOTH_ADMIN);
+        permissionsToRequest.add(Manifest.permission.CAMERA);
+        permissionsToRequest.add(Manifest.permission.CHANGE_WIFI_STATE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            permissionsToRequest.add(Manifest.permission.BLUETOOTH_CONNECT);
+            permissionsToRequest.add(Manifest.permission.BLUETOOTH_ADVERTISE);
+            permissionsToRequest.add(Manifest.permission.BLUETOOTH_SCAN);
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissionsToRequest.add(Manifest.permission.NEARBY_WIFI_DEVICES);
+        }
+        this.AUTH_BASE_ARR = permissionsToRequest.toArray(new String[0]);
+        SFLog.i(TAG,"will apply permissions:");
+        for (String per:this.AUTH_BASE_ARR) {
+            SFLog.i(TAG,per);
+        }
+
         // 申请权限
         if (Build.VERSION.SDK_INT >= 23) {
             if (!hasBasePhoneAuth()) {
@@ -280,6 +327,8 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
         comunicateSppRb = findViewById(R.id.main_comunicate_spp_rb);
         comunicateSocketServerRb = findViewById(R.id.main_comunicate_socket_server_rb);
         comunicateSocketClientRb = findViewById(R.id.main_comunicate_socket_client_rb);
+        p2pRb = findViewById(R.id.main_comunicate_wifi_p2p_rb);
+        apRb = findViewById(R.id.main_comunicate_wifi_ap_rb);
         ipEt = findViewById(R.id.main_server_ip_et);
         portEt = findViewById(R.id.main_server_port_et);
         socketMtuEt = findViewById(R.id.main_socket_mtu_et);
@@ -773,13 +822,21 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
         this.qrWifiSSID = null;
         this.p2pTryCount = 0;
         this.clearMac();
+        SFNaviOption.getInstance().setNetwork(null);
         int transMode = SFTransmissionMode.TRANSMISSION_MODE_SPP;
+        boolean useP2p = true;
         if(this.comunicateBleRb.isChecked())transMode = SFTransmissionMode.TRANSMISSION_MODE_BLE;
         if(this.comunicateSppRb.isChecked())transMode = SFTransmissionMode.TRANSMISSION_MODE_SPP;
         if(this.comunicateSocketServerRb.isChecked())transMode = SFTransmissionMode.TRANSMISSION_MODE_SOCKET_SERVER;
         if(this.comunicateSocketClientRb.isChecked())transMode = SFTransmissionMode.TRANSMISSION_MODE_SOCKET_CLIENT;
+        if(this.p2pRb.isChecked()){
+            useP2p = true;
+        }else{
+            useP2p = false;
+        }
 
         int mode = this.imageModeRb.isChecked() ? SFNaviOption.NAV_MODE_IMAGE : SFNaviOption.NAV_MODE_INFO;
+
 
         String maxFpsTxt = this.maxFpsEt.getText().toString();
         String jpegQualityTxt = this.jpegQualityEt.getText().toString();
@@ -789,6 +846,7 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
         String heightText = this.heightEt.getText().toString();
         String mac = null;
         String p2pSSID = null;
+        String p2pPassword = null;
         boolean isWifi = false;
         boolean isPan = false;
 
@@ -820,6 +878,7 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
         SFPreviewQRWifiResult wifiResult = qrResult.getWifiInfo();
         if(wifiResult != null){
             p2pSSID = wifiResult.getSSID();
+            p2pPassword = wifiResult.getPassword();
         }
 
         Map<String,String> dict = qrResult.getAllCustomInfo();
@@ -892,22 +951,20 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
         }
         this.qrWifiSSID = p2pSSID;
         if(isWifi && !StringUtil.isNullOrEmpty(p2pSSID)){
-            ProgressHUDHelper.show(this,"disconnect P2P..");
-            SFLog.i(TAG,"disconnect it first...");
-            this.p2PManager.disconnect();
-//            final  String finalSSID = p2pSSID;
-//            this.mainHandler.postDelayed(new Runnable() {
-//                @Override
-//                public void run() {
-//                    connectP2P(finalSSID);
-//                }
-//            },1000);
+            if(useP2p){
+                ProgressHUDHelper.show(this,"disconnect P2P..");
+                SFLog.i(TAG,"disconnect it first...");
+                this.p2PManager.disconnect();
+            }else{
+                ProgressHUDHelper.show(this,"connect to WIFI AP " + p2pSSID + "...");
+                SFLog.i(TAG,"connect to WIFI AP=%s pwd =%s...",p2pSSID,p2pPassword);
+                this.apConnector.connectToSSID(p2pSSID,p2pPassword);
+            }
         }
 
         if(isPan){
             onAnalogBtnTouch(true);
         }
-
     }
 
     private  void connectP2P(String ssid){
@@ -1006,6 +1063,29 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
     public void onDisconnectComplete() {
         SFLog.e(TAG,"onDisconnectComplete");
         if(qrWifiSSID != null)connectP2P(qrWifiSSID);
+
+    }
+
+
+    //endregion
+
+    //region SFWifiConnectorCallback
+    @Override
+    public void onWifiConnectorComplete(boolean success, String error, Network wifiNetwork) {
+        SFLog.i(TAG,"onWifiConnectorComplete success=%b,error=%s，network=%s",success,error,wifiNetwork);
+        ProgressHUDHelper.dismiss();
+        if(!success){
+            toast("connect to AP fail.error=" + error);
+            return;
+        }
+        SFNaviOption.getInstance().setNetwork(wifiNetwork);
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if(qrTransMode == SFTransmissionMode.TRANSMISSION_MODE_SOCKET_CLIENT)onAnalogBtnTouch(true);
+            }
+        });
+        toast("WIFI AP is Connected");
 
     }
     //endregion
