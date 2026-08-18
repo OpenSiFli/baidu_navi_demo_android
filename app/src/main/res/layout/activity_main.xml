@@ -93,7 +93,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="WIFI"
+                android:text="WIFI(注意:切换P2P/AP需要重启APP,板子，删除已有的wifi，p2p连接)"
                 />
             <RadioGroup
                 android:visibility="visible"
@@ -113,7 +113,7 @@
                     android:id="@+id/main_comunicate_wifi_ap_rb"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:checked="true"
+                    android:checked="false"
                     android:textSize="10sp"
                     android:text="AP"/>
 
