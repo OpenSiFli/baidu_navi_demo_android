@@ -16,7 +16,7 @@ compileSdkVersion 35
     defaultConfig {
         applicationId "com.baidu.mapclient.liteapp"
         minSdkVersion 24
-        targetSdkVersion 34
+        targetSdkVersion 33
         versionCode 54
         versionName "1.2.25"
 
