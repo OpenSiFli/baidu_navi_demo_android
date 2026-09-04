@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?><!-- Copyright (C) 2017 Baidu, Inc. All Rights Reserved. -->
-
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <supports-screens
@@ -9,44 +8,45 @@
         android:resizeable="true"
         android:smallScreens="true" />
 
-    <!--用于访问网络，网络定位需要上网-->
+    <!-- 用于访问网络，网络定位需要上网 -->
     <uses-permission android:name="android.permission.INTERNET" />
+
     <queries>
         <intent>
-            <action android:name="android.intent.action.TTS_SERVICE"/>
+            <action android:name="android.intent.action.TTS_SERVICE" />
         </intent>
     </queries>
-    <!--用于进行网络定位-->
+    <!-- 用于进行网络定位 -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <!--用于访问GPS定位-->
+    <!-- 用于访问GPS定位 -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
-    <!--获取网络状态，用于在线算路与离线算路之间的切换 -->
+    <!-- 获取网络状态，用于在线算路与离线算路之间的切换 -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!--用于访问WIFI网络状态，用于判断网络状态 -->
+    <!-- 用于访问WIFI网络状态，用于判断网络状态 -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <!-- 后台服务 -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <!-- 诱导悬浮窗 -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.MANAGE_OVERLAY_PERMISSION" />
-
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
-
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES"
+    <uses-permission
+        android:name="android.permission.NEARBY_WIFI_DEVICES"
         android:usesPermissionFlags="neverForLocation" />
 
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
+
     <uses-permission
         android:name="android.permission.BLUETOOTH"
         android:maxSdkVersion="30" />
@@ -58,8 +58,9 @@
     <uses-feature
         android:glEsVersion="0x00020000"
         android:required="true" />
+
     <application
-        android:name="com.baidu.mapclient.liteapp.ONApplication"
+        android:name=".ONApplication"
         android:allowBackup="true"
         android:hardwareAccelerated="true"
         android:icon="@mipmap/icon_1024"
@@ -67,11 +68,10 @@
         android:largeHeap="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-
         <service
             android:name=".service.MinimapService"
             android:enabled="true"
-            android:exported="false"/>
+            android:exported="false" />
 
         <uses-library
             android:name="org.apache.http.legacy"
@@ -94,50 +94,42 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".activity.DemoNaviSettingActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden"
             android:launchMode="singleInstance"
             android:theme="@android:style/Theme.NoTitleBar" />
-
         <activity
             android:name=".activity.DemoGuideActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden"
             android:label="@string/title_route_guide_demo"
             android:theme="@android:style/Theme.NoTitleBar" />
-
         <activity
             android:name=".activity.DemoExtGpsActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden"
             android:theme="@android:style/Theme.NoTitleBar" />
-
         <activity
             android:name=".activity.DemoDrivingActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden"
             android:theme="@android:style/Theme.NoTitleBar" />
-
         <activity
             android:name=".activity.DemoCruiserActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden"
             android:theme="@android:style/Theme.NoTitleBar" />
-
         <activity
             android:name=".activity.DemoAnalogActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden"
             android:theme="@android:style/Theme.NoTitleBar" />
-
         <activity
             android:name=".activity.DemoSelectNodeActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden" />
-
         <activity
             android:name=".activity.BNDemoCustomGuideActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden"
             android:theme="@android:style/Theme.NoTitleBar" />
-
-        <activity android:name=".activity.BNDemoLightNaviActivity"
-            android:configChanges="orientation|screenSize|keyboard|keyboardHidden"/>
+        <activity
+            android:name=".activity.BNDemoLightNaviActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden" />
         <activity
             android:name=".devicescan.DeviceScanActivity"
             android:screenOrientation="portrait" />
@@ -157,5 +149,15 @@
         </provider>
 
         <service android:name=".ForegroundService" />
+        <service
+            android:name=".service.MyMediaProjectionService"
+            android:exported="false"
+            android:foregroundServiceType="mediaProjection" />
+
+        <activity
+            android:name=".activity.AirPlayActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
     </application>
+
 </manifest>

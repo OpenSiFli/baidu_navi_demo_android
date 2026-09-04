@@ -128,6 +128,7 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
     private TextView versionTv;
     private Button logBtn;
     private ImageButton qrScanBtn;
+    private Button airplayBtn;
     private String targetMac;
 
     private BroadcastReceiver mReceiver;
@@ -322,6 +323,7 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
         mGotoSettingsBtn.setText("导航设置" + getVersionName(this));
         searchDeviceBtn = findViewById(R.id.navi_search_device_btn);
         logBtn = findViewById(R.id.navi_log_btn);
+        airplayBtn = findViewById(R.id.navi_airplay_btn);
 //        useSocketCb = findViewById(R.id.main_use_socket_cb);
         comunicateBleRb = findViewById(R.id.main_comunicate_ble_rb);
         comunicateSppRb = findViewById(R.id.main_comunicate_spp_rb);
@@ -591,6 +593,12 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
                 onQrScanBtnTouch();
             }
         });
+        airplayBtn.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onAirPlayBtnTouch();
+            }
+        });
 //        useSocketCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 //            @Override
 //            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -752,6 +760,11 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
 
     private void onQrScanBtnTouch(){
         this.qrScanlauncher.launch(new Intent(DemoMainActivity.this, QRScanActivity.class));
+    }
+
+    private void onAirPlayBtnTouch(){
+        SFLog.i(TAG,"onAirPlayBtnTouch");
+        startActivity(new Intent(this, AirPlayActivity.class));
     }
 
     private void applySetting(){
