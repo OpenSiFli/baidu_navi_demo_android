@@ -764,7 +764,51 @@ public class DemoMainActivity extends AppCompatActivity implements SFWifiP2PCall
 
     private void onAirPlayBtnTouch(){
         SFLog.i(TAG,"onAirPlayBtnTouch");
-        startActivity(new Intent(this, AirPlayActivity.class));
+//        startActivity(new Intent(this, AirPlayActivity.class));
+        String maxFpsTxt = this.maxFpsEt.getText().toString();
+        String jpegQualityTxt = this.jpegQualityEt.getText().toString();
+        String ipTxt = this.ipEt.getText().toString();
+        String portTxt = this.portEt.getText().toString();
+        String widthTxt = this.widthEt.getText().toString();
+        String heightText = this.heightEt.getText().toString();
+        String socketMtuTxt = this.socketMtuEt.getText().toString();
+
+        int port = 2025;
+        int maxFps = 20;
+        float jpegQuality = 0.2f;
+        int width = 800;
+        int height = 480;
+        int socketMtu = 16;
+
+        try{
+            width = Integer.parseInt(widthTxt);
+            height = Integer.parseInt(heightText);
+            maxFps = Integer.parseInt(maxFpsTxt);
+            jpegQuality = Float.parseFloat(jpegQualityTxt);
+            port = Integer.parseInt(portTxt);
+            socketMtu = Integer.parseInt(socketMtuTxt);
+        }catch (Exception e){
+            SFLog.e("MAIN","applySetting error %s",e);
+        }
+
+        int transMode1 = SFTransmissionMode.TRANSMISSION_MODE_SPP;
+        if(this.comunicateBleRb.isChecked())transMode1 = SFTransmissionMode.TRANSMISSION_MODE_BLE;
+        if(this.comunicateSppRb.isChecked())transMode1 = SFTransmissionMode.TRANSMISSION_MODE_SPP;
+        if(this.comunicateSocketServerRb.isChecked())transMode1 = SFTransmissionMode.TRANSMISSION_MODE_SOCKET_SERVER;
+        if(this.comunicateSocketClientRb.isChecked())transMode1 = SFTransmissionMode.TRANSMISSION_MODE_SOCKET_CLIENT;
+
+        Intent intent = new Intent(this, AirPlayActivity.class);
+        intent.putExtra(AirPlayActivity.EXTRA_BLE_DEVICE, this.targetMac);
+        intent.putExtra(AirPlayActivity.EXTRA_TRANS_MODE, transMode1);
+        intent.putExtra(AirPlayActivity.EXTRA_IP, ipTxt);
+        intent.putExtra(AirPlayActivity.EXTRA_PORT, port);
+        intent.putExtra(AirPlayActivity.EXTRA_MAX_FPS, maxFps);
+        intent.putExtra(AirPlayActivity.EXTRA_JPEG_QUALITY, jpegQuality);
+        intent.putExtra(AirPlayActivity.EXTRA_SIZE_WIDTH, width);
+        intent.putExtra(AirPlayActivity.EXTRA_SIZE_HEIGHT, height);
+        intent.putExtra(AirPlayActivity.EXTRA_SOCKET_MTU, socketMtu);
+
+        startActivity(intent);
     }
 
     private void applySetting(){

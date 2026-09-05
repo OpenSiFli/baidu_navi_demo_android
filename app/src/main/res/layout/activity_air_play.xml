@@ -8,35 +8,52 @@
     android:layout_height="match_parent"
     tools:context=".activity.AirPlayActivity">
 
-    <!-- 开始按钮 -->
-    <Button
-        android:id="@+id/navi_airplay_start_btn"
+    <!-- 垂直居中容器，包含两个按钮和速度显示 -->
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:layout_marginBottom="16dp"
-        android:text="开始镜像"
-        android:textColor="@color/black"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/navi_airplay_stop_btn"
-        app:layout_constraintVertical_chainStyle="packed" />
+        app:layout_constraintBottom_toBottomOf="parent">
+        <ImageView
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:src="@mipmap/icon_1024"
+            />
 
-    <!-- 停止按钮 -->
-    <Button
-        android:id="@+id/navi_airplay_stop_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:layout_marginTop="16dp"
-        android:text="停止镜像"
-        android:textColor="@color/black"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/navi_airplay_start_btn"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        <!-- 开始按钮 -->
+        <Button
+            android:id="@+id/navi_airplay_start_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:text="开始镜像"
+            android:textColor="@color/black" />
+
+        <!-- 停止按钮，与开始按钮保持间距 -->
+        <Button
+            android:id="@+id/navi_airplay_stop_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="16dp"
+            android:text="停止镜像"
+            android:textColor="@color/black" />
+
+        <!-- 速度显示 TextView -->
+        <TextView
+            android:id="@+id/navi_airplay_speed_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="瞬时 0KB/s 平均 0KB/s fps:0"
+            android:textColor="@color/black" />
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

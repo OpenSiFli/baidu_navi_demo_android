@@ -44,6 +44,7 @@ public class MyMediaProjectionService extends Service {
     private int screenWidth;
     private int screenHeight;
     private int screenDensity;
+    private boolean isRunning =false;
 
     // 图像回调（供 SDK 集成）
     public interface MyMedioOnImageAvailableListener {
@@ -125,6 +126,10 @@ public class MyMediaProjectionService extends Service {
      * 停止录屏并释放资源（Activity 可以调用此方法主动停止）
      */
     public void stopProjection() {
+        isRunning = false;
+        if (backgroundHandler != null) {
+            backgroundHandler.removeCallbacksAndMessages(null);
+        }
         releaseResources();
         // 停止前台服务
         stopForeground(true);
@@ -138,7 +143,7 @@ public class MyMediaProjectionService extends Service {
             Log.e(TAG, "MediaProjection 未初始化");
             return;
         }
-
+        isRunning = true;
         if (imageReader != null) {
             imageReader.close();
         }
@@ -146,6 +151,7 @@ public class MyMediaProjectionService extends Service {
         // 创建 ImageReader
         imageReader = ImageReader.newInstance(screenWidth, screenHeight, PixelFormat.RGBA_8888, 2);
         imageReader.setOnImageAvailableListener(reader -> {
+            if(!isRunning)return;
             Image image = reader.acquireLatestImage();
             if (image != null) {
                 Log.d(TAG, "捕获到图像: " + image.getWidth() + "x" + image.getHeight());
