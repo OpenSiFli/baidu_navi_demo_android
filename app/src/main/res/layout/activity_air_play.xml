@@ -23,6 +23,21 @@
             android:layout_height="200dp"
             android:src="@mipmap/icon_1024"
             />
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="20dp"
+            android:background="#ff0000"
+            />
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="20dp"
+            android:background="#00ff00"
+            />
+        <TextView
+            android:layout_width="100dp"
+            android:layout_height="20dp"
+            android:background="#0000ff"
+            />
 
         <!-- 开始按钮 -->
         <Button
@@ -31,6 +46,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
+
             android:text="开始镜像"
             android:textColor="@color/black" />
 
@@ -42,6 +58,7 @@
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
             android:layout_marginTop="16dp"
+            android:enabled="false"
             android:text="停止镜像"
             android:textColor="@color/black" />
 

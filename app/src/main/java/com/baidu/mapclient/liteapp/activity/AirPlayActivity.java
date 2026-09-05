@@ -8,7 +8,9 @@ import android.media.Image;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -84,6 +86,7 @@ public class AirPlayActivity extends AppCompatActivity
     private KProgressHUD hud;
     private boolean isPreview;
     private boolean isStopMirror = false;
+    private Handler mainHanlder = new Handler(Looper.getMainLooper());
 
     // 服务连接回调
     private final ServiceConnection serviceConnection = new ServiceConnection() {
@@ -204,6 +207,7 @@ public class AirPlayActivity extends AppCompatActivity
         Intent captureIntent = projectionManager.createScreenCaptureIntent();
         startActivityForResult(captureIntent, REQUEST_CODE_SCREEN_CAPTURE);
         this.isStopMirror = false;
+        this.airplayBtn.setEnabled(false);
     }
 
     private void onStopAirplayBtnTouch(){
@@ -211,6 +215,7 @@ public class AirPlayActivity extends AppCompatActivity
         this.isStopMirror = true;
         this.manager.stop();
         this.stopScreenMirroring();
+        this.airplayBtn.setEnabled(true);
     }
 
     @Override
@@ -222,7 +227,13 @@ public class AirPlayActivity extends AppCompatActivity
                 if (isBound && mediaService != null) {
                     // 服务已绑定，直接初始化
                     mediaService.initProjection(projection, screenWidth, screenHeight, screenDensity);
-                    this.startPreview();
+                    this.mainHanlder.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            startPreview();
+                        }
+                    },200);
+
                     Toast.makeText(this, "录屏已开始", Toast.LENGTH_SHORT).show();
                 } else {
                     // 尚未绑定（极少情况），暂存
@@ -344,6 +355,7 @@ public class AirPlayActivity extends AppCompatActivity
 
     private void setIsPreview(boolean isPreview){
         this.isPreview = isPreview;
+        this.stopBtn.setEnabled(isPreview);
 
     }
 
@@ -352,10 +364,14 @@ public class AirPlayActivity extends AppCompatActivity
     public void completeWithError(SFPreviewBaseManager manager, SFError error) {
         SFLog.i(TAG, "completeWithError =" + error);
         this.dismissProgressHUD();
-        this.manager.stop();
+
         if(error != null){
             this.toast(error.toString());
         }
+        this.isStopMirror = true;
+        this.manager.stop();
+        this.stopScreenMirroring();
+        this.airplayBtn.setEnabled(true);
 
     }
 

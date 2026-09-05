@@ -152,17 +152,22 @@ public class MyMediaProjectionService extends Service {
         imageReader = ImageReader.newInstance(screenWidth, screenHeight, PixelFormat.RGBA_8888, 2);
         imageReader.setOnImageAvailableListener(reader -> {
             if(!isRunning)return;
-            Image image = reader.acquireLatestImage();
-            if (image != null) {
-                Log.d(TAG, "捕获到图像: " + image.getWidth() + "x" + image.getHeight());
-                if (imageListener != null) {
-                    // 外部监听器处理，外部必须负责关闭 image
-                    imageListener.onImageAvailable(image);
-                } else {
-                    // 无监听器则立即释放
-                    image.close();
+            try{
+                Image image = reader.acquireLatestImage();
+                if (image != null) {
+                    Log.d(TAG, "捕获到图像: " + image.getWidth() + "x" + image.getHeight());
+                    if (imageListener != null) {
+                        // 外部监听器处理，外部必须负责关闭 image
+                        imageListener.onImageAvailable(image);
+                    } else {
+                        // 无监听器则立即释放
+                        image.close();
+                    }
                 }
+            }catch (Exception ex){
+                ex.printStackTrace();
             }
+
         }, backgroundHandler);
 
         // 创建虚拟显示器
