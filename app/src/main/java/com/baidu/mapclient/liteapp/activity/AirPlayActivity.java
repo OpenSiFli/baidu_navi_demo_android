@@ -7,6 +7,7 @@ import android.content.ServiceConnection;
 import android.media.Image;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
+import android.net.Network;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -21,6 +22,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.baidu.mapclient.liteapp.R;
+import com.baidu.mapclient.liteapp.config.SFNaviOption;
 import com.baidu.mapclient.liteapp.service.MyMediaProjectionService;
 import com.baidu.mapclient.liteapp.util.speedview.SpeedView;
 import com.kaopiz.kprogresshud.KProgressHUD;
@@ -336,8 +338,9 @@ public class AirPlayActivity extends AppCompatActivity
                 Toast.makeText(this, "ip 参数异常", Toast.LENGTH_SHORT).show();
                 return;
             }
+            Network network = SFNaviOption.getInstance().getNetwork();
             this.manager.setSocketMtu(this.socketMtu);
-            this.manager.startPreviewVideo(config, ip, port,null);
+            this.manager.startPreviewVideo(config, ip, port,network);
             SFLog.i(TAG,"start Preview..." + ip);
         } else if (this.transMode == SFTransmissionMode.TRANSMISSION_MODE_BLE || this.transMode == SFTransmissionMode.TRANSMISSION_MODE_SPP) {
             this.manager.startPreviewVideo(config, targetMac);
