@@ -8,6 +8,7 @@ import android.media.Image;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.net.Network;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -200,7 +201,12 @@ public class AirPlayActivity extends AppCompatActivity
         if (!isBound) {
             Intent intent = new Intent(this, MyMediaProjectionService.class);
             // 必须先 startService 才能成为前台服务
-            startService(intent);
+//            startService(intent);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent);
+            } else {
+                startService(intent);
+            }
             // 绑定服务
             bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
         }
@@ -407,6 +413,7 @@ public class AirPlayActivity extends AppCompatActivity
         String speedTxt = fpsText + this.speedView.getCurrentSpeedText();
         this.speedView.viewSpeedByCompleteBytes(sendBytes);
         this.speedTv.setText(speedTxt);
+        SFLog.i(TAG,speedTxt);
     }
 
     @Override
