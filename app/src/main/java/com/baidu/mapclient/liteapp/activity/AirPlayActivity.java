@@ -249,6 +249,7 @@ public class AirPlayActivity extends AppCompatActivity
                     Toast.makeText(this, "录屏授权成功，等待服务绑定", Toast.LENGTH_SHORT).show();
                 }
             } else {
+                this.airplayBtn.setEnabled(true);
                 Toast.makeText(this, "用户拒绝录屏权限", Toast.LENGTH_SHORT).show();
             }
         }
