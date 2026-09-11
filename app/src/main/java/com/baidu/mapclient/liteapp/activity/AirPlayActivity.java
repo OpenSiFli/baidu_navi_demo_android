@@ -4,6 +4,9 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.media.Image;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
@@ -90,6 +93,7 @@ public class AirPlayActivity extends AppCompatActivity
     private boolean isPreview;
     private boolean isStopMirror = false;
     private Handler mainHanlder = new Handler(Looper.getMainLooper());
+    private byte[] lastSampleBuffer;
 
     // 服务连接回调
     private final ServiceConnection serviceConnection = new ServiceConnection() {
@@ -155,6 +159,13 @@ public class AirPlayActivity extends AppCompatActivity
             screenHeight = 1920;
             screenDensity = 320;
         }
+    }
+
+    private Bitmap createWhiteBitmap(){
+        Bitmap result = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
+        result.eraseColor(Color.BLACK);
+        SFLog.i(TAG, "pixel=" + Integer.toHexString(result.getPixel(0,0)));
+        return result;
     }
 
     private void initView() {
@@ -340,6 +351,7 @@ public class AirPlayActivity extends AppCompatActivity
         config.setMirroredHorizontally(false);
         config.setMaxFps(maxFps);
         config.setRotation(90);
+        config.setAspectSizeForImage(true);
         if (this.transMode == SFTransmissionMode.TRANSMISSION_MODE_SOCKET_CLIENT) {
             if (StringUtil.isNullOrEmpty(ip)) {
                 Toast.makeText(this, "ip 参数异常", Toast.LENGTH_SHORT).show();
@@ -369,17 +381,24 @@ public class AirPlayActivity extends AppCompatActivity
 
     }
 
+    private void sendSingleImage(){
+        if(this.lastSampleBuffer != null){
+            SFLog.w(TAG,"sendSingleImage with lastSampleBuffer");
+            this.manager.previewJpegSample(this.lastSampleBuffer);
+        }
+    }
+
     //region ISFPreviewVideoManagerCallback
     @Override
     public void completeWithError(SFPreviewBaseManager manager, SFError error) {
         SFLog.i(TAG, "completeWithError =" + error);
         this.dismissProgressHUD();
-
+        this.lastSampleBuffer = null;
         if(error != null){
             this.toast(error.toString());
         }
         this.isStopMirror = true;
-        this.manager.stop();
+//        this.manager.stop();
         this.stopScreenMirroring();
         this.airplayBtn.setEnabled(true);
 
@@ -405,7 +424,7 @@ public class AirPlayActivity extends AppCompatActivity
 
     @Override
     public void onImageMake(byte[] jpgData) {
-
+        this.lastSampleBuffer = jpgData;
     }
 
     @Override
@@ -415,6 +434,22 @@ public class AirPlayActivity extends AppCompatActivity
         this.speedView.viewSpeedByCompleteBytes(sendBytes);
         this.speedTv.setText(speedTxt);
         SFLog.i(TAG,speedTxt);
+    }
+
+    @Override
+    public void onMakeNextFrame(float progress, int cacheSize) {
+        SFLog.i(TAG,"onMakeNextFrame %.1f,cacheSize %d",progress,cacheSize);
+        if(cacheSize <= 0){
+            this.sendSingleImage();
+        }
+    }
+
+    @Override
+    public void onReadyToSendImage() {
+        SFLog.i(TAG,"onReadyToSendImage");
+        Bitmap fistImage = this.createWhiteBitmap();
+        long timeNow = System.currentTimeMillis();
+        this.manager.previewVideoSample(fistImage,timeNow);
     }
 
     @Override

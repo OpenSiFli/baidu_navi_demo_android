@@ -1428,7 +1428,7 @@ public class MiniMapViewController implements IBNMiniMapViewManager, ISFPreviewI
     }
 
     @Override
-    public void onMakeNextFrame(float process) {
+    public void onMakeNextFrame(float process,int cacheSize) {
         SFLog.i(TAG,"onMakeNextFrame %.1f",process);
         this.sendSingleImage();
     }
