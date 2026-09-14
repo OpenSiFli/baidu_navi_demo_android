@@ -533,6 +533,12 @@ public class DeviceScanActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        try {
+            mContext.unregisterReceiver(mReceiver);
+        } catch (IllegalArgumentException e) {
+            // 已经注销或未注册，忽略
+        }
+
         super.onDestroy();
         if (mScanning) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
