@@ -458,8 +458,8 @@ public class AirPlayActivity extends AppCompatActivity
 //        Bitmap fistImage = this.createWhiteBitmap();
 //        long timeNow = System.currentTimeMillis();
 //        this.manager.previewVideoSample(fistImage,timeNow);
-        byte[] blackJpeg = HexUtil.hexStringToBytes(this.blackJpegHex);
-        this.manager.previewJpegSample(blackJpeg);
+//        byte[] blackJpeg = HexUtil.hexStringToBytes(this.blackJpegHex);
+//        this.manager.previewJpegSample(blackJpeg);
     }
 
     @Override
